@@ -10,6 +10,9 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "cloudframework-io/core": "dev-master"
+        "cloudframework-io/core": "dev-master",
+        "abraham/twitteroauth": "^0.6.2",
+        "facebook/php-sdk-v4": "^5.1",
+        "google/apiclient": "^1.1"
     }
 }

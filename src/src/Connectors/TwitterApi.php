@@ -65,7 +65,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * @return array
      * @throws \Abraham\TwitterOAuth\TwitterOAuthException
      */
-    function authorize(array $credentials)
+    /*function authorize(array $credentials)
     {
         $token = array();
         try {
@@ -85,5 +85,60 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             SocialNetworks::generateErrorResponse($e->getMessage(), 500);
         }
         return $token;
+    }*/
+
+    public function authorize($code, $redirectUrl)
+    {
+        // TODO: Implement authorize() method.
+    }
+
+    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        // TODO: Implement exportFollowers() method.
+    }
+
+    public function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        // TODO: Implement exportMedia() method.
+    }
+
+    public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        // TODO: Implement exportPosts() method.
+    }
+
+    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        // TODO: Implement exportSubscribers() method.
+    }
+
+    public function getProfile($entity, $id)
+    {
+        // TODO: Implement getProfile() method.
+    }
+
+    public function importMedia($entity, $id, $parameters)
+    {
+        // TODO: Implement importMedia() method.
+    }
+
+    public function post($entity, $id, array $parameters)
+    {
+        // TODO: Implement post() method.
+    }
+
+    public function setApiKeys($clientId, $clientSecret, $clientScope)
+    {
+        // TODO: Implement setApiKeys() method.
+    }
+
+    public function setAccessToken(array $credentials)
+    {
+        // TODO: Implement setAccessToken() method.
+    }
+
+    public function requestAuthorization($redirectUrl)
+    {
+        // TODO: Implement requestAuthorization() method.
     }
 }

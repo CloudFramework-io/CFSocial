@@ -32,7 +32,7 @@ class SocialNetworks extends Singleton
     /**
      * Method that initialize a social api instance to use
      * @param $social
-     * @return \CloudFramework\Services\SocialNetworks\Interfaces\SocialNetworksInterface
+     * @return \CloudFramework\Service\SocialNetworks\Interfaces\SocialNetworksInterface
      * @throws \Exception
      */
     public function getSocialApi($social) {
