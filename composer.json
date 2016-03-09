@@ -1,0 +1,15 @@
+{
+    "name": "cloudframework-io/cfsocial",
+    "description": "Social network connectors for Cloud Framework",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fran López",
+            "email": "fl@cloudframework.io"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "cloudframework-io/core": "dev-master"
+    }
+}
