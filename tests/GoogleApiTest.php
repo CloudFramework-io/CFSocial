@@ -1,5 +1,5 @@
 <?php
-namespace CloudFramework\Service\SocialNetworks\Tests;
+namespace CloudFramework\Service\SocialNetworks\tests;
 
 use CloudFramework\Service\SocialNetworks\Connectors\GoogleApi;
 use GuzzleHttp\Client;
