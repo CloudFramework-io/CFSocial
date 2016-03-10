@@ -6,6 +6,10 @@
         {
             "name": "Fran López",
             "email": "fl@cloudframework.io"
+        },
+        {
+            "name": "Salvador Castro",
+            "email": "sc@bloombees.com"
         }
     ],
     "minimum-stability": "dev",
