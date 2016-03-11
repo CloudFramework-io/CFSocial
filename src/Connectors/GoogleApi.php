@@ -173,6 +173,11 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorServiceException
      */
     public function refreshCredentials($credentials) {
+        $this->checkCredentialsParameters($credentials);
+        if ((!isset($credentials["refresh_token"])) || (null === $credentials["refresh_token"]) || ("" === $credentials["refresh_token"])) {
+            throw new ConnectorConfigException("'refresh_token' parameter is required");
+        }
+
         try {
             $this->client->setClientId($this->clientId);
             $this->client->setClientSecret($this->clientSecret);
@@ -841,9 +846,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorConfigException("'access_token' parameter is required");
         }
 
-        if ((!isset($credentials["refresh_token"])) || (null === $credentials["refresh_token"]) || ("" === $credentials["refresh_token"])) {
-            throw new ConnectorConfigException("'refresh_token' parameter is required");
-        }
+
 
         if ((!isset($credentials["id_token"])) || (null === $credentials["id_token"]) || ("" === $credentials["id_token"])) {
             throw new ConnectorConfigException("'id_token' parameter is required");
