@@ -141,6 +141,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      */
     public function setAccessToken(array $credentials) {
         $this->client->setAccessToken(json_encode($credentials));
+
     }
 
     /**
