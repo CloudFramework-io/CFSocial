@@ -51,7 +51,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
         $this->clientScope = $clientScope;
 
         $this->client = new \Google_Client();
-        $this->client->setClassConfig("Google_Http_Request", "disable_gzip", true);
         $this->client->setClientId($this->clientId);
         $this->client->setClientSecret($this->clientSecret);
     }
