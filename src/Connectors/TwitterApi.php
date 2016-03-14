@@ -3,93 +3,180 @@ namespace CloudFramework\Service\SocialNetworks\Connectors;
 
 use Abraham\TwitterOAuth\TwitterOAuth;
 use CloudFramework\Patterns\Singleton;
+use CloudFramework\Service\SocialNetworks\Exceptions\AuthenticationException;
+use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
+use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
+use CloudFramework\Service\SocialNetworks\Exceptions\MalformedUrlException;
 use CloudFramework\Service\SocialNetworks\Interfaces\SocialNetworkInterface;
 use CloudFramework\Service\SocialNetworks\SocialNetworks;
 
 class TwitterApi extends Singleton implements SocialNetworkInterface {
 
     const ID = 'twitter';
+    const TWITTER_OAUTH_URL = "https://api.twitter.com/oauth/authorize";
 
-    public static $auth_keys = array("consumer_key", "consumer_secret", "oauth_access_token", "oauth_access_token_secret");
+    // Twitter client object
+    private $client;
+
+    // API keys
+    private $clientId;
+    private $clientSecret;
+    private $clientScope = array();
 
     /**
-     * Authenticate twitter api service
-     * @param array $credentials
+     * Set Twitter Api keys
+     * @param $clientId
+     * @param $clientSecret
+     * @param $clientScope
+     * @throws ConnectorConfigException
      */
-    function getAuth(array $credentials)
-    {
-        return SocialNetworks::hydrateCredentials(TwitterApi::ID, TwitterApi::$auth_keys, $credentials);
+    public function setApiKeys($clientId, $clientSecret, $clientScope) {
+        if ((null === $clientId) || ("" === $clientId)) {
+            throw new ConnectorConfigException("'clientId' parameter is required");
+        }
+
+        if ((null === $clientSecret) || ("" === $clientSecret)) {
+            throw new ConnectorConfigException("'clientSecret' parameter is required");
+        }
+
+        if ((null === $clientScope) || (!is_array($clientScope)) /*|| (count($clientScope) == 0)*/) {
+            throw new ConnectorConfigException("'clientScope' parameter is required");
+        }
+
+        $this->clientId = $clientId;
+        $this->clientSecret = $clientSecret;
+        $this->clientScope = $clientScope;
+
+        $this->client = new TwitterOAuth($this->clientId, $this->clientSecret);
     }
 
     /**
-     * Service that make twitter authorize url
-     * @return string
-     * @throws \Abraham\TwitterOAuth\TwitterOAuthException
+     * Compose Twitter Api credentials array from session data
+     * @param string $redirectUrl
+     * @throws ConnectorConfigException
+     * @throws MalformedUrlException
+     * @return array
      */
-    function getAuthUrl()
+    public function requestAuthorization($redirectUrl)
     {
-        $params = array(
-            'oauth_callback' => '',
+        if ((null === $redirectUrl) || (empty($redirectUrl))) {
+            throw new ConnectorConfigException("'redirectUrl' parameter is required");
+        } else {
+            if (!SocialNetworks::wellFormedUrl($redirectUrl)) {
+                throw new MalformedUrlException("'redirectUrl' is malformed");
+            }
+        }
+
+        $parameters = array(
+            'oauth_callback' => $redirectUrl
         );
-        //TODO change to dynamic api keys
-        $twitterApi = new TwitterOAuth("wa9yeKg4HnsHUSLUItdFv8CfS", "msckuLH8Ee3dVJcayuaYIKHt47aB6Z2EB6mw3uRrnnIDFv7NqF");
-        $response = $twitterApi->oauth('oauth/request_token', $params);
+
+        $response = $this->client->oauth('oauth/request_token', $parameters);
 
         $parameters = array(
             "oauth_token" => $response["oauth_token"],
-            "oauth_callback" => SocialNetworks::generateRequestUrl() . "socialnetworks?twitterOAuthCallback"
+            "oauth_callback" => $redirectUrl
         );
 
-        return "https://api.twitter.com/oauth/authorize?" . http_build_query($parameters);
+        $authUrl = self::TWITTER_OAUTH_URL . "?" . http_build_query($parameters);
+
+        // Authentication request
+        return $authUrl;
     }
 
     /**
-     * Service that connect to Twitter Api and extract a follower count for authorized user
-     * @param array $credentials
-     * @return int
-     */
-    function getFollowers(array $credentials)
-    {
-        try {
-            $twitterApi = new TwitterOAuth($credentials["consumer_key"], $credentials["consumer_secret"], $credentials["oauth_access_token"], $credentials["oauth_access_token_secret"]);
-            $response = $twitterApi->get("statuses/user_timeline", array("count" => 1));
-            return $response[0]->user->followers_count;
-        } catch(\Exception $e) {
-            SocialNetworks::generateErrorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Method that verify de auth token from twitter
-     * @param array $credentials
+     * @param string $code
+     * @param string $verifier
+     * @param string $redirectUrl
      * @return array
-     * @throws \Abraham\TwitterOAuth\TwitterOAuthException
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @throws MalformedUrlException
      */
-    /*function authorize(array $credentials)
+    public function authorize($code, $verifier, $redirectUrl)
     {
-        $token = array();
-        try {
-            $twitterApi = new TwitterOAuth($credentials["client"], $credentials["secret"]);
-            $params = array(
-                "oauth_verifier" => $credentials["verifier"],
-                "oauth_token" => $credentials["token"],
-            );
-
-            $response = $twitterApi->oauth("oauth/access_token", $params);
-
-            $token = array(
-                "oauth_access_token" => $response["oauth_token"],
-                "oauth_access_token_secret" => $response["oauth_token_secret"],
-            );
-        } catch(\Exception $e) {
-            SocialNetworks::generateErrorResponse($e->getMessage(), 500);
+        if ((null === $code) || ("" === $code)) {
+            throw new ConnectorConfigException("'code' parameter is required");
         }
-        return $token;
-    }*/
 
-    public function authorize($code, $redirectUrl)
+        if ((null === $verifier) || ("" === $verifier)) {
+            throw new ConnectorConfigException("'verifier' parameter is required");
+        }
+
+        if ((null === $redirectUrl) || (empty($redirectUrl))) {
+            throw new ConnectorConfigException("'redirectUrl' parameter is required");
+        } else {
+            if (!SocialNetworks::wellFormedUrl($redirectUrl)) {
+                throw new MalformedUrlException("'redirectUrl' is malformed");
+            }
+        }
+
+        try {
+            $parameters = array(
+                "oauth_verifier" => $verifier,
+                "oauth_token" => $code,
+            );
+
+            $response = $this->client->oauth("oauth/access_token", $parameters);
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $twitterCredentials = array(
+            "access_token" => $response["oauth_token"],
+            "access_token_secret" => $response["oauth_token_secret"],
+        );
+
+        return $twitterCredentials;
+    }
+
+    /**
+     * Method that inject the access token in connector
+     * @param array $credentials
+     */
+    public function setAccessToken(array $credentials) {
+        $this->client->setOauthToken($credentials["access_token"], $credentials["access_token_secret"]);
+    }
+
+    /**
+     * Service that check if credentials are valid
+     * @param array $credentials
+     * @return string
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function checkCredentials(array $credentials) {
+        $this->checkCredentialsParameters($credentials);
+
+        try {
+            return $this->getProfile(SocialNetworks::ENTITY_USER, null);
+        } catch(\Exception $e) {
+            throw new ConnectorConfigException("Invalid credentials set'");
+        }
+    }
+
+    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
-        // TODO: Implement authorize() method.
+        // TODO: Implement exportSubscribers() method.
+    }
+
+    /**
+     * Service that query to Twitter Api to get user profile
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @return string
+     * @throws ConnectorServiceException
+     */
+    public function getProfile($entity, $id)
+    {
+        $response = $this->client->get("account/verify_credentials", array("include_email", "true"));
+
+        if (200 === $this->client->getLastHttpCode()) {
+            return json_encode($response);
+        } else {
+            throw new ConnectorServiceException("Error getting user profile");
+        }
     }
 
     public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
@@ -107,16 +194,6 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         // TODO: Implement exportPosts() method.
     }
 
-    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportSubscribers() method.
-    }
-
-    public function getProfile($entity, $id)
-    {
-        // TODO: Implement getProfile() method.
-    }
-
     public function importMedia($entity, $id, $parameters)
     {
         // TODO: Implement importMedia() method.
@@ -127,18 +204,22 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         // TODO: Implement post() method.
     }
 
-    public function setApiKeys($clientId, $clientSecret, $clientScope)
-    {
-        // TODO: Implement setApiKeys() method.
-    }
+    /**
+     * Method that check credentials are present and valid
+     * @param array $credentials
+     * @throws ConnectorConfigException
+     */
+    private function checkCredentialsParameters(array $credentials) {
+        if ((null === $credentials) || (!is_array($credentials)) || (count($credentials) == 0)) {
+            throw new ConnectorConfigException("Invalid credentials set");
+        }
 
-    public function setAccessToken(array $credentials)
-    {
-        // TODO: Implement setAccessToken() method.
-    }
+        if ((!isset($credentials["access_token"])) || (null === $credentials["access_token"]) || ("" === $credentials["access_token"])) {
+            throw new ConnectorConfigException("'access_token' parameter is required");
+        }
 
-    public function requestAuthorization($redirectUrl)
-    {
-        // TODO: Implement requestAuthorization() method.
+        if ((!isset($credentials["access_token_secret"])) || (null === $credentials["access_token_secret"]) || ("" === $credentials["access_token_secret"])) {
+            throw new ConnectorConfigException("'access_token_secret' parameter is required");
+        }
     }
 }

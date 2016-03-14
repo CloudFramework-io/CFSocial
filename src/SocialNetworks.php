@@ -93,14 +93,15 @@ class SocialNetworks extends Singleton
      * (This method receives the callback from the social network after login)
      * @param string $social
      * @param string $code
+     * @param string $verifier
      * @param string $redirectUrl
      * @return mixed
      * @throws \Exception
      */
-    public function confirmAuthorization($social, $code, $redirectUrl)
+    public function confirmAuthorization($social, $code, $verifier = null, $redirectUrl)
     {
         $connector = $this->getSocialApi($social);
-        return $connector->authorize($code, $redirectUrl);
+        return $connector->authorize($code, $verifier, $redirectUrl);
     }
 
     /**

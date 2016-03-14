@@ -96,6 +96,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     /**
      * Authentication service from google sign in request
      * @param string $code
+     * @param string $verifier
      * @param string $redirectUrl
      * @return array
      * @throws AuthenticationException
@@ -104,7 +105,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws \Exception
      *
      */
-    public function authorize($code, $redirectUrl)
+    public function authorize($code, $verifier = null, $redirectUrl)
     {
         if ((null === $code) || ("" === $code)) {
             throw new ConnectorConfigException("'code' parameter is required");
@@ -171,7 +172,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param $credentials
      * @return mixed
      * @throws AuthenticationException
-     * @throws ConnectorServiceException
+     * @throws ConnectorConfigException
      */
     public function refreshCredentials($credentials) {
         $this->checkCredentialsParameters($credentials);

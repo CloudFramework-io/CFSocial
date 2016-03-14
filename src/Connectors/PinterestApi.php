@@ -84,6 +84,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * @param string $code
+     * @param string $verifier
      * @param string $redirectUrl
      * @return array
      * @throws AuthenticationException
@@ -91,7 +92,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorServiceException
      * @throws MalformedUrlException
      */
-    public function authorize($code, $redirectUrl)
+    public function authorize($code, $verifier = null, $redirectUrl)
     {
         if ((null === $code) || ("" === $code)) {
             throw new ConnectorConfigException("'code' parameter is required");
@@ -122,11 +123,11 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that check if credentials are valid
-     * @param $credentials
+     * @param array $credentials
      * @return mixed
      * @throws ConnectorConfigException
      */
-    public function checkCredentials($credentials) {
+    public function checkCredentials(array $credentials) {
         $this->checkCredentialsParameters($credentials);
 
         try {

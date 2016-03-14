@@ -84,12 +84,13 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Authentication service from Facebook sign in request
-     * @param null $code
+     * @param string $code
+     * @param string $verifier
      * @param $redirectUrl
      * @return array
      * @throws ConnectorServiceException
      */
-    public function authorize($code = null, $redirectUrl)
+    public function authorize($code = null, $verifier = null, $redirectUrl)
     {
         try {
             $helper = $this->client->getRedirectLoginHelper();
@@ -115,11 +116,11 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Service that check if credentials are valid
-     * @param $credentials
+     * @param array $credentials
      * @return null
      * @throws ConnectorConfigException
      */
-    public function checkCredentials($credentials) {
+    public function checkCredentials(array $credentials) {
         $this->checkCredentialsParameters($credentials);
 
         try {
