@@ -121,9 +121,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
         $this->client->setRedirectUri($redirectUrl);
 
         try {
-            $this->client->authenticate($code);
-
-            $googleCredentials = json_decode($this->client->getAccessToken(), true);
+            $googleCredentials = $this->client->authenticate($code);
         } catch(\Exception $e) {
             if (401 === $e->getCode()) {
                 throw new AuthenticationException("Error fetching OAuth2 access token, client is invalid");
@@ -182,12 +180,12 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
         try {
             $this->client->setClientId($this->clientId);
             $this->client->setClientSecret($this->clientSecret);
-            $this->client->refreshToken($credentials["refresh_token"]);
+            $accessToken = $this->client->refreshToken($credentials["refresh_token"]);
         } catch(\Exception $e) {
             throw new AuthenticationException("Error refreshing token: " . $e->getMessage());
         }
 
-        return json_decode($this->client->getAccessToken(), true);
+        return $accessToken;
     }
 
     /**
@@ -429,7 +427,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
                 $driveService = new \Google_Service_Drive($this->client);
                 $parameters = array();
                 $parameters["q"] = "((mimeType contains 'image' or mimeType contains 'video') and trashed = false)";
-                $parameters["maxResults"] = $maxResultsPerPage;
+                $parameters["pageSize"] = $maxResultsPerPage;
 
                 if ($pageToken) {
                     $parameters["pageToken"] = $pageToken;
@@ -438,7 +436,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
                 $filesList = $driveService->files->listFiles($parameters);
                 $pageToken = $filesList->getNextPageToken();
 
-                $items = $filesList->getItems();
+                $items = $filesList->getFiles();
                 if ((count($items) == 0) && (null !== $pageToken)) {
                     continue;
                 }
