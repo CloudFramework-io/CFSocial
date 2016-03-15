@@ -165,7 +165,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * Service that query to Twitter Api to get user profile
      * @param string $entity "user"
      * @param string $id    user id
-     * @return string
+     * @return array
      * @throws ConnectorServiceException
      */
     public function getProfile($entity, $id)
@@ -173,7 +173,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $response = $this->client->get("account/verify_credentials", array("include_email", "true"));
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_encode($response);
+            return (array) $response;
         } else {
             throw new ConnectorServiceException("Error getting user profile");
         }

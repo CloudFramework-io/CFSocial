@@ -141,7 +141,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * Service that query to Pinterest Api to get user profile
      * @param string $entity "user"
      * @param string $id    user id
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -159,7 +159,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         }
 
         // Instagram API doesn't return the user's e-mail
-        return json_encode($data);
+        return $data->toArray();
     }
 
     /**
@@ -167,7 +167,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param string $entity "user"
      * @param string $id    user id
      * @param $name
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -185,7 +185,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             $pageToken = null;
         }
 
-        return json_encode($data);
+        return $data;
     }
 
     /**
@@ -197,7 +197,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -276,7 +276,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $pins["pageToken"] = $pageToken;
 
-        return json_encode($pins);
+        return $pins;
     }
 
     /**
@@ -287,7 +287,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -351,7 +351,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $pins["pageToken"] = $pageToken;
 
-        return json_encode($pins);
+        return $pins;
     }
 
     /**
@@ -362,7 +362,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -433,7 +433,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $boards["pageToken"] = $pageToken;
 
-        return json_encode($boards);
+        return $boards;
     }
 
     /**
@@ -443,7 +443,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @param $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -504,7 +504,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $followers["pageToken"] = $pageToken;
 
-        return json_encode($followers);
+        return $followers;
     }
 
     /**
@@ -514,7 +514,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @param $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -575,7 +575,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $subscribers["pageToken"] = $pageToken;
 
-        return json_encode($subscribers);
+        return $subscribers;
     }
 
     /**
@@ -585,7 +585,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -648,7 +648,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $boards["pageToken"] = $pageToken;
 
-        return json_encode($boards);
+        return $boards;
     }
 
     /**
@@ -658,7 +658,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -719,7 +719,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $interests["pageToken"] = $pageToken;
 
-        return json_encode($interests);
+        return $interests;
     }
 
     /**
@@ -727,7 +727,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $entity   "board"
      * @param $username
      * @param $boardname
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -743,7 +743,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error getting board settings: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($board);
+        return $board->toArray();
     }
 
     /**
@@ -752,7 +752,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $id       user id
      * @param $name
      * @param $description
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -772,7 +772,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error creating board: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($board);
+        return $board->toArray();
     }
 
     /**
@@ -782,7 +782,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $boardname
      * @param $name
      * @param $description
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -806,7 +806,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error editing board: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($board);
+        return $board->toArray();
     }
 
     /**
@@ -814,7 +814,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $entity   "board"
      * @param $username
      * @param $boardname
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -829,14 +829,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error deleting board: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode(array("status"=>"success"));
+        return array("status"=>"success");
     }
 
     /**
      * Service that query to Pinterest Api to get settings of a pin
      * @param $entity   "pin"
      * @param $id       pin id
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -851,7 +851,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error getting pin settings: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($pin);
+        return $pin->toArray();
     }
 
     /**
@@ -864,7 +864,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $link
      * @param $imageType
      * @param $image
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -889,7 +889,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error creating pin: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($pin);
+        return $pin->toArray();
     }
 
     /**
@@ -899,7 +899,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $board
      * @param $note
      * @param $link
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -924,14 +924,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error editing pin: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($pin);
+        return $pin->toArray();
     }
 
     /**
      * Service that delete an existing board in Pinterest
      * @param $entity   "pin"
      * @param $id
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -944,7 +944,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException('Error deleting pin: ' . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode(array("status"=>"success"));
+        return array("status"=>"success");
     }
 
     /**
@@ -953,7 +953,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param string $id    user id
      * @param $userId
      * @param $action
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -971,7 +971,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
                                                                         $e->getMessage(), $e->getCode());
         }
 
-        return json_encode(array("status"=>"success"));
+        return array("status"=>"success");
     }
 
     /**
@@ -980,7 +980,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param string $id    user id
      * @param $boardId
      * @param $action
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -998,7 +998,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
                 $e->getMessage(), $e->getCode());
         }
 
-        return json_encode(array("status"=>"success"));
+        return array("status"=>"success");
     }
 
     public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)

@@ -180,7 +180,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $nextPageUrl
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -226,7 +226,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
         $followers["nextPageUrl"] = $nextPageUrl;
 
-        return json_encode($followers);
+        return $followers;
     }
 
     /**
@@ -236,7 +236,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $nextPageUrl
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -281,7 +281,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
         $subscribers["nextPageUrl"] = $nextPageUrl;
 
-        return json_encode($subscribers);
+        return $subscribers;
     }
 
     public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
@@ -292,7 +292,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * Service that query to Instagram Api to get user profile
      * @param string $entity "user"
      * @param string $id    user id
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -310,7 +310,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
         }
 
         // Instagram API doesn't return the user's e-mail
-        return json_encode($data["data"]);
+        return $data["data"];
     }
 
     /**
@@ -320,7 +320,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxTotalResults.
      * @param integer $numberOfPages
      * @param string $nextPageUrl
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -369,7 +369,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
         $files["nextPageUrl"] = $nextPageUrl;
 
-        return json_encode($files);
+        return $files;
     }
 
     /**
@@ -379,7 +379,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param $maxTotalResults
      * @param $numberOfPages
      * @param $nextPageUrl
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -430,7 +430,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
         $files["nextPageUrl"] = $nextPageUrl;
 
-        return json_encode($files);
+        return $files;
     }
 
     public function importMedia($entity, $id, $parameters) {
@@ -442,7 +442,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param array $parameters
      *      "content" => Text of the comment
      *      "media_id" => Instagram media's ID
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -473,7 +473,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
                 $data["meta"]["error_message"], $data["meta"]["code"]);
         }
 
-        return json_encode($data);
+        return $data;
     }
 
     /**
@@ -481,7 +481,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param string $entity "user"
      * @param string $id    user id
      * @param string $userId
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -498,7 +498,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
                 $data["meta"]["error_message"], $data["meta"]["code"]);
         }
 
-        return json_encode($data["data"]);
+        return $data["data"];
     }
 
     /**
@@ -507,7 +507,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param string $id    user id
      * @param $userId
      * @param $action
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -524,7 +524,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
                 $data["meta"]["error_message"], $data["meta"]["code"]);
         }
 
-        return json_encode($data["data"]);
+        return $data["data"];
     }
 
     /**
@@ -535,7 +535,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param $maxTotalResults
      * @param $numberOfPages
      * @param $nextPageUrl
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -583,7 +583,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
         $users["nextPageUrl"] = $nextPageUrl;
 
-        return json_encode($users);
+        return $users;
     }
 
     /**

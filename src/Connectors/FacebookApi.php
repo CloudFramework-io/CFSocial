@@ -157,7 +157,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @param $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -209,14 +209,14 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $posts["pageToken"] = $pageToken;
 
-        return json_encode($posts);
+        return $posts;
     }
 
     /**
      * Service that query to Facebook Api to get user profile
      * @param string $entity "user"
      * @param string $id    user id
-     * @return string
+     * @return array
      * @throws ConnectorServiceException
      */
     public function getProfile($entity, $id) {
@@ -237,18 +237,15 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             "email" => $response->getGraphUser()->getEmail()
         );
 
-        return json_encode($profile);
+        return $profile;
     }
 
     /**
      * Service that upload a media file (photo) to Facebook
      * @param string $entity "user"|"page
      * @param string $id    user or page id
-     * @param string $mediaType "url"|"path"
-     * @param string $value url or path
-     * @param string $title message for the media
-     * @return string
-     * @throws AuthenticationException
+     * @param $parameters
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -258,7 +255,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             $this->checkUser($id);
         } else {
             $this->checkPage($id);
-            $pageinfo = json_decode($this->getPage($entity, $id), true);
+            $pageinfo = $this->getPage($entity, $id);
         }
 
         if ((null === $parameters["media_type"]) || ("" === $parameters["media_type"])) {
@@ -326,7 +323,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         $graphNode = $response->getGraphNode();
         $media = array("media_id" => $graphNode["id"]);
 
-        return json_encode($media);
+        return $media;
     }
 
     /**
@@ -336,7 +333,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -347,7 +344,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             $this->checkUser($id);
         } else {
             $this->checkPage($id);
-            $pageinfo = json_decode($this->getPage($entity, $id), true);
+            $pageinfo = $this->getPage($entity, $id);
         }
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
@@ -388,7 +385,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $photos["pageToken"] = $pageToken;
 
-        return json_encode($photos);
+        return $photos;
     }
 
     /**
@@ -408,7 +405,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             $this->checkUser($id);
         } else {
             $this->checkPage($id);
-            $pageinfo = json_decode($this->getPage($entity, $id), true);
+            $pageinfo = $this->getPage($entity, $id);
         }
 
         try {
@@ -425,7 +422,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $post = array("post_id" => $graphNode["id"]);
 
-        return json_encode($post);
+        return $post;
     }
 
     /**
@@ -434,7 +431,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @param string $id    user or page id
      * @param $title
      * @param $caption
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -443,7 +440,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             $this->checkUser($id);
         } else {
             $this->checkPage($id);
-            $pageinfo = json_decode($this->getPage($entity, $id), true);
+            $pageinfo = $this->getPage($entity, $id);
         }
 
         $parameters = array();
@@ -463,7 +460,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         $graphNode = $response->getGraphNode();
         $album = array("album_id" => $graphNode["id"]);
 
-        return json_encode($album);
+        return $album;
     }
 
     /**
@@ -473,7 +470,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @param $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -523,7 +520,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $albums["pageToken"] = $pageToken;
 
-        return json_encode($albums);
+        return $albums;
     }
 
     /**
@@ -534,7 +531,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @param $pageToken
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     public function exportPhotosFromAlbum($entity, $id, $albumId, $maxResultsPerPage, $numberOfPages, $pageToken) {
@@ -580,7 +577,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $photos["pageToken"] = $pageToken;
 
-        return json_encode($photos);
+        return $photos;
     }
 
     /**
@@ -590,7 +587,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @param $pageToken
-     * @return string
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -631,14 +628,14 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $pages["pageToken"] = $pageToken;
 
-        return json_encode($pages);
+        return $pages;
     }
 
     /**
      * Service that query to Facebook Api to get page settings
      * @param $entity   "page"
      * @param $id       page id
-     * @return string
+     * @return array
      * @throws ConnectorServiceException
      */
     public function getPage($entity, $id) {
@@ -658,7 +655,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             "id" => $node["id"]
         );
 
-        return json_encode($page);
+        return $page;
     }
 
     /**

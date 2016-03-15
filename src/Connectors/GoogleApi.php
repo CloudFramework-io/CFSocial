@@ -191,7 +191,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     /**
      * Service that query to Google api to revoke access token in order
      * to ensure the permissions granted to the application are removed
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -204,10 +204,10 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException("Error revoking token: " . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode(array(
+        return array(
             "status" => "success",
             "note" => "Following a successful revocation response, it might take some time before the revocation has full effect"
-        ));
+        );
     }
 
     /**
@@ -217,7 +217,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -267,7 +267,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
         $people["pageToken"] = $pageToken;
 
-        return json_encode($people);
+        return $people;
     }
 
     public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
@@ -279,7 +279,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * Service that query to Google Api for followers info (likes and shares) of a post
      * @param string $userId
      * @param string $postId
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -319,7 +319,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException("Error getting people in Google+ post: " . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($people);
+        return $people;
     }
 
     /**
@@ -329,7 +329,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -374,14 +374,14 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
         $activities["pageToken"] = $pageToken;
 
-        return json_encode($activities);
+        return $activities;
     }
 
     /**
      * Service that query to Google+ Api to get user profile
      * @param string $entity "user"
      * @param string $id    user id
-     * @return string
+     * @return Google_Model
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -399,7 +399,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException("Error getting user profile: " . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($profile->toSimpleObject());
+        return $profile->toSimpleObject();
     }
 
     /**
@@ -409,7 +409,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -456,7 +456,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
         $files["pageToken"] = $pageToken;
 
-        return json_encode($files);
+        return $files;
     }
 
     /**
@@ -466,7 +466,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param string $parameters
      *      "media_type"    =>      "url"|"path"
      *      "value"         =>      url or path
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -558,7 +558,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             // Reset to the client to execute requests immediately in the future.
             $this->client->setDefer(false);
 
-            return json_encode($result);
+            return $result;
         } catch (Exception $e) {
             throw new ConnectorServiceException("Error importing '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
         }
@@ -583,7 +583,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      *          "1": url or path for a file
      *      "person_id"  => Google + user whose domain the stream will be published in (mandatory in case of access_type = "person")
      *      "circle_id"  => Google circle where the stream will be published in (mandatory in case of access_type = "circle")
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -702,7 +702,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException("Error creating post: " . $e->getMessage(), $e->getCode());
         }
 
-        return json_encode($activity);
+        return $activity;
     }
 
     /**
@@ -712,7 +712,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -762,7 +762,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
         $circles["pageToken"] = $pageToken;
 
-        return json_encode($circles);
+        return $circles;
     }
 
     /**
@@ -773,7 +773,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
-     * @return string
+     * @return array
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -828,7 +828,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
         $people["pageToken"] = $pageToken;
 
-        return json_encode($people);
+        return $people;
     }
 
     /**
