@@ -711,6 +711,15 @@ class SocialNetworks extends Singleton
     }
 
     /******************************************************************************************************
+     **                                         PINTEREST END POINTS                                      **
+     ******************************************************************************************************/
+
+    public function getTimeline($social, $entity, $id) {
+        $connector = $this->getSocialApi($social);
+        return $connector->getTimeline($entity, $id);
+    }
+
+    /******************************************************************************************************
      **                                         GENERAL UTILITIES                                        **
      ******************************************************************************************************/
 
@@ -770,6 +779,7 @@ class SocialNetworks extends Singleton
             'mp3' => 'audio/mpeg',
             'qt' => 'video/quicktime',
             'mov' => 'video/quicktime',
+            'mp4' => 'video/mp4',
 
             // adobe
             'pdf' => 'application/pdf',
