@@ -223,18 +223,22 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         $this->checkUser($id);
 
         try {
-            $response = $this->client->get("/".$id."?fields=id,name,first_name,middle_name,last_name,email", $this->accessToken);
+            $response = $this->client->get("/".$id."?fields=id,name,first_name,middle_name,last_name,email,cover,locale,website,link,picture", $this->accessToken);
         } catch(\Exception $e) {
             throw new ConnectorServiceException('Error getting user profile: ' . $e->getMessage(), $e->getCode());
         }
 
+        /** @var  $graphUser */
+        $graphUser = $response->getGraphUser();
         $profile = array(
-            "user_id" => $response->getGraphUser()->getId(),
-            "name" => $response->getGraphUser()->getName(),
-            "first_name" => $response->getGraphUser()->getFirstName(),
-            "middle_name" => $response->getGraphUser()->getMiddleName(),
-            "last_name" => $response->getGraphUser()->getLastName(),
-            "email" => $response->getGraphUser()->getEmail()
+            "user_id" => $graphUser->getId(),
+            "name" => $graphUser->getName(),
+            "first_name" => $graphUser->getFirstName(),
+            "last_name" => $graphUser->getLastName(),
+            "email" => $graphUser->getEmail(),
+            "photo" => $graphUser->getPicture(),
+            "locale" => $graphUser->getField('locale', 'en'),
+            "url" => $graphUser->getLink(),
         );
 
         return $profile;
@@ -609,7 +613,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
                 $pagesEdge = $response->getGraphEdge();
 
                 foreach ($pagesEdge as $page) {
-                    $pages[$count][] = $page->asArray();
+                    $pages[] = $page->asArray();
                 }
                 $count++;
 
@@ -625,10 +629,11 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             }
         } while ($pageToken);
 
-
-        $pages["pageToken"] = $pageToken;
-
-        return $pages;
+        return array(
+            "pages" => $pages,
+            "totalCount" => count($pages),
+            "pageToken" => $pageToken,
+        );
     }
 
     /**
