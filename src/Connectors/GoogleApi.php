@@ -399,7 +399,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException("Error getting user profile: " . $e->getMessage(), $e->getCode());
         }
 
-        return $profile->toSimpleObject();
+        return json_decode(json_encode($profile->toSimpleObject()), true);
     }
 
     /**
@@ -738,13 +738,10 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
                 $circlesList = $plusDomainsService->circles->listCircles($id, $parameters);
 
-                if (!isset($circles["total"])) {
-                    $circles["total"] = $circlesList->getTotalItems();
-                }
+                $total = $circlesList->getTotalItems();
 
-                $circles[$count] = array();
                 foreach($circlesList->getItems() as $circle) {
-                    $circles[$count][] = $circle->toSimpleObject();
+                    $circles[] = json_decode(json_encode($circle->toSimpleObject()), true);
                 }
                 $count++;
 
@@ -754,15 +751,16 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
                 if (($numberOfPages > 0) && ($count == $numberOfPages)) {
                     break;
                 }
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 throw new ConnectorServiceException("Error exporting circles: " . $e->getMessage(), $e->getCode());
-                $pageToken = null;
             }
         } while ($pageToken);
 
-        $circles["pageToken"] = $pageToken;
-
-        return $circles;
+        return array(
+            'circles' => $circles,
+            "totalCount" => $total,
+            "pageToken" => $pageToken,
+        );
     }
 
     /**
