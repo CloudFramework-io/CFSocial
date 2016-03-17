@@ -711,12 +711,46 @@ class SocialNetworks extends Singleton
     }
 
     /******************************************************************************************************
-     **                                         PINTEREST END POINTS                                      **
+     **                                         TWITTER END POINTS                                      **
      ******************************************************************************************************/
 
+    /**
+     * Service that gets the home timeline of the user
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
     public function getTimeline($social, $entity, $id) {
         $connector = $this->getSocialApi($social);
         return $connector->getTimeline($entity, $id);
+    }
+
+    /**
+     * Service that gets a single tweet information
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getTweet($social, $entity, $id) {
+        $connector = $this->getSocialApi($social);
+        return $connector->getTweet($entity, $id);
+    }
+
+    /**
+     * Service that deletes a tweet
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function deleteTweet($social, $entity, $id) {
+        $connector = $this->getSocialApi($social);
+        return $connector->deleteTweet($entity, $id);
     }
 
     /******************************************************************************************************

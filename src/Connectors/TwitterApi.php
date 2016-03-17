@@ -160,11 +160,6 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         }
     }
 
-    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportSubscribers() method.
-    }
-
     /**
      * Service that query to Twitter Api to get user profile
      * @param string $entity "user"
@@ -203,9 +198,156 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         }
     }
 
+    /**
+     * Service that query to Twitter Api to get single tweet information
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getTweet($entity, $id)
+    {
+        $response = $this->client->get("statuses/show/".$id);
+
+        if (200 === $this->client->getLastHttpCode()) {
+            return json_decode(json_encode($response),true);
+        } else {
+            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+        }
+    }
+
+    /**
+     * Service that query to Twitter Api to delete a tweet
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function deleteTweet($entity, $id)
+    {
+        $response = $this->client->post("statuses/destroy/".$id);
+
+        if (200 === $this->client->getLastHttpCode()) {
+            return json_decode(json_encode($response),true);
+        } else {
+            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+        }
+    }
+
+    /**
+     * Service that query to Twitter Api for users the user is followed by
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
     public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
-        // TODO: Implement exportFollowers() method.
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+
+        $followers = array();
+        $count = 0;
+
+        do {
+            $parameters = array();
+            $parameters["user_id"] = $id;
+            $parameters["count"] = $maxResultsPerPage;
+            $parameters["cursor"] = $pageToken;
+
+            $followersList = json_decode(json_encode($this->client->get("followers/list", $parameters)),true);
+
+            if (200 !== $this->client->getLastHttpCode()) {
+                $pageToken = null;
+                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+            }
+
+            $followers[$count] = array();
+            foreach($followersList["users"] as $follower) {
+                $followers[$count][] = $follower;
+            }
+            $count++;
+
+            $pageToken = $followersList["next_cursor"];
+
+            // 0 Indicates last page
+            if ($pageToken == 0) {
+                $pageToken = null;
+            }
+
+            // If number of pages is zero, then all elements are returned
+            if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                break;
+            }
+        } while ($pageToken);
+
+        $followers["pageToken"] = $pageToken;
+
+        return $followers;
+    }
+
+    /**
+     * Service that query to Twitter Api for users the user is following (friends)
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+
+        $friends = array();
+        $count = 0;
+
+        do {
+            $parameters = array();
+            $parameters["user_id"] = $id;
+            $parameters["count"] = $maxResultsPerPage;
+            $parameters["cursor"] = $pageToken;
+
+            $friendsList = json_decode(json_encode($this->client->get("friends/list", $parameters)),true);
+
+            if (200 !== $this->client->getLastHttpCode()) {
+                $pageToken = null;
+                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+            }
+
+            $friends[$count] = array();
+            foreach($friendsList["users"] as $friend) {
+                $friends[$count][] = $friend;
+            }
+            $count++;
+
+            $pageToken = $friendsList["next_cursor"];
+
+            // 0 Indicates last page
+            if ($pageToken == 0) {
+                $pageToken = null;
+            }
+
+            // If number of pages is zero, then all elements are returned
+            if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                break;
+            }
+        } while ($pageToken);
+
+        $friends["pageToken"] = $pageToken;
+
+        return $friends;
     }
 
     public function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
@@ -321,6 +463,37 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
         if ((!isset($credentials["access_token_secret"])) || (null === $credentials["access_token_secret"]) || ("" === $credentials["access_token_secret"])) {
             throw new ConnectorConfigException("'access_token_secret' parameter is required");
+        }
+    }
+
+    /**
+     * Method that check userId is ok
+     * @param $userId
+     * @throws ConnectorConfigException
+     */
+    private function checkUser($userId) {
+        if ((null === $userId) || ("" === $userId)) {
+            throw new ConnectorConfigException("'userId' parameter is required");
+        }
+    }
+
+    /**
+     * Method that check pagination parameters are ok
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @throws ConnectorConfigException
+     */
+    private function checkPagination($maxResultsPerPage, $numberOfPages) {
+        if (null === $maxResultsPerPage) {
+            throw new ConnectorConfigException("'maxResultsPerPage' parameter is required");
+        } else if (!is_numeric($maxResultsPerPage)) {
+            throw new ConnectorConfigException("'maxResultsPerPage' parameter is not numeric");
+        }
+
+        if (null === $maxResultsPerPage) {
+            throw new ConnectorConfigException("'numberOfPages' parameter is required");
+        } else if (!is_numeric($numberOfPages)) {
+            throw new ConnectorConfigException("'numberOfPages' parameter is not numeric");
         }
     }
 }
