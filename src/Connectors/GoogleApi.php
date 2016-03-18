@@ -379,14 +379,13 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Google+ Api to get user profile
-     * @param string $entity "user"
      * @param string $id    user id
      * @return Google_Model
      * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function getProfile($entity, $id)
+    public function getProfile($id)
     {
         $this->checkExpiredToken();
 
@@ -394,12 +393,30 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
         try {
             $plusService = new \Google_Service_Plus($this->client);
-            $profile = $plusService->people->get($id);
+            $person = $plusService->people->get($id);
         } catch(\Exception $e) {
             throw new ConnectorServiceException("Error getting user profile: " . $e->getMessage(), $e->getCode());
         }
 
-        return json_decode(json_encode($profile->toSimpleObject()), true);
+        $personArray = json_decode(json_encode($person->toSimpleObject()), true);
+
+        $profile = [
+            "user_id" => $personArray["id"],
+            "name" => $personArray["displayName"],
+            "first_name" => ((array_key_exists("name", $personArray)) &&
+                (array_key_exists("givenName", $personArray["name"])))?$personArray["name"]["givenName"]:null,
+            "last_name" => ((array_key_exists("name", $personArray)) &&
+                                (array_key_exists("familyName", $personArray["name"])))?$personArray["name"]["familyName"]:null,
+            "email" => ((array_key_exists("emails", $personArray)) &&
+                            (count($personArray["emails"]) > 0))?$personArray["emails"][0]["value"]:null,
+            "photo" => ((array_key_exists("image", $personArray)) &&
+                                (array_key_exists("url", $personArray["image"])))?$personArray["image"]["url"]:null,
+            "locale" => $personArray["language"],
+            "url" => $personArray["url"],
+            "raw" => $personArray
+        ];
+
+        return $profile;
     }
 
     /**

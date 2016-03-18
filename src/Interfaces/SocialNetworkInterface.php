@@ -12,7 +12,7 @@ interface SocialNetworkInterface {
     function authorize($code, $verifier, $redirectUrl);
     function setAccessToken(array $credentials);
     function checkCredentials(array $credentials);
-    function getProfile($entity, $id);
+    function getProfile($id);
     function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
     function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
     function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);

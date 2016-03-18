@@ -124,7 +124,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         $this->checkCredentialsParameters($credentials);
 
         try {
-            return $this->getProfile(SocialNetworks::ENTITY_USER, self::FACEBOOK_SELF_USER);
+            return $this->getProfile(self::FACEBOOK_SELF_USER);
         } catch(\Exception $e) {
             throw new ConnectorConfigException("Invalid credentials set");
         }
@@ -214,12 +214,11 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Service that query to Facebook Api to get user profile
-     * @param string $entity "user"
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
      */
-    public function getProfile($entity, $id) {
+    public function getProfile($id) {
         $this->checkUser($id);
 
         try {
@@ -236,9 +235,10 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             "first_name" => $graphUser->getFirstName(),
             "last_name" => $graphUser->getLastName(),
             "email" => $graphUser->getEmail(),
-            "photo" => $graphUser->getPicture(),
+            "photo" => $graphUser->getPicture()->getUrl(),
             "locale" => $graphUser->getField('locale', 'en'),
             "url" => $graphUser->getLink(),
+            "raw" => json_decode($graphUser, true)
         );
 
         return $profile;

@@ -167,7 +167,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
         $this->checkCredentialsParameters($credentials);
 
         try {
-            $this->getProfile(SocialNetworks::ENTITY_USER, self::INSTAGRAM_SELF_USER);
+            return $this->getProfile(self::INSTAGRAM_SELF_USER);
         } catch(\Exception $e) {
             throw new ConnectorConfigException("Invalid credentials set'");
         }
@@ -290,13 +290,12 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Instagram Api to get user profile
-     * @param string $entity "user"
      * @param string $id    user id
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function getProfile($entity, $id)
+    public function getProfile($id)
     {
         $this->checkUser($id);
 
@@ -309,8 +308,20 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
                 $data["meta"]["error_message"], $data["meta"]["code"]);
         }
 
+        $profile = [
+            "user_id" => $data["data"]["id"],
+            "name" => $data["data"]["full_name"],
+            "first_name" => null,
+            "last_name" => null,
+            "email" => null,
+            "photo" => $data["data"]["profile_picture"],
+            "locale" => null,
+            "url" => null,
+            "raw" => $data["data"]
+        ];
+
         // Instagram API doesn't return the user's e-mail
-        return $data["data"];
+        return $profile;
     }
 
     /**

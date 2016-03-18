@@ -143,14 +143,13 @@ class SocialNetworks extends Singleton
     /**
      * Service that query to a social network api to get user profile
      * @param string $social
-     * @param string $entity "user"
-     * @param string $id    user id
+     * @param string $id user id
      * @return mixed
      * @throws \Exception
      */
-    public function getProfile($social, $entity, $id) {
+    public function getProfile($social, $id) {
         $connector = $this->getSocialApi($social);
-        return $connector->getProfile($entity, $id);
+        return $connector->getProfile($id);
     }
 
     /**

@@ -154,7 +154,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $this->checkCredentialsParameters($credentials);
 
         try {
-            return $this->getProfile(SocialNetworks::ENTITY_USER, null);
+            return $this->getProfile(null);
         } catch(\Exception $e) {
             throw new ConnectorConfigException("Invalid credentials set'");
         }
@@ -162,17 +162,30 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Twitter Api to get user profile
-     * @param string $entity "user"
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
      */
-    public function getProfile($entity, $id)
+    public function getProfile($id = null)
     {
         $response = $this->client->get("account/verify_credentials", array("include_email", "true"));
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            $data = json_decode(json_encode($response),true);
+
+            $profile = array(
+                "user_id" => $data["id"],
+                "name" => $data["name"],
+                "first_name" => null,
+                "last_name" => null,
+                "email" => null,
+                "photo" => $data["profile_image_url"],
+                "locale" => $data["lang"],
+                "url" => $data["url"],
+                "raw" => $data
+            );
+
+            return $profile;
         } else {
             $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);

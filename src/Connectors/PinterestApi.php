@@ -131,7 +131,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         $this->checkCredentialsParameters($credentials);
 
         try {
-            return $this->getProfile(SocialNetworks::ENTITY_USER, self::PINTEREST_SELF_USER);
+            return $this->getProfile(self::PINTEREST_SELF_USER);
         } catch(\Exception $e) {
             throw new ConnectorConfigException("Invalid credentials set");
         }
@@ -139,13 +139,12 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Pinterest Api to get user profile
-     * @param string $entity "user"
      * @param string $id    user id
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function getProfile($entity, $id)
+    public function getProfile($id)
     {
         $this->checkUser($id);
 
@@ -158,8 +157,23 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorConfigException("Invalid credentials set");
         }
 
-        // Instagram API doesn't return the user's e-mail
-        return $data->toArray();
+        $data = $data->toArray();
+
+        $profile = array(
+            "user_id" => $data["id"],
+            "name" => $data["first_name"] . " " . $data["last_name"],
+            "first_name" => $data["first_name"],
+            "last_name" => $data["last_name"],
+            "email" => null,
+            "photo" => ((array_key_exists("image", $data)) &&
+                            (count($data["image"]) > 0))?$data["image"][key($data["image"])]["url"]:null,
+            "locale" => null,
+            "url" => null,
+            "raw" => $data
+        );
+
+        // Pinterest API doesn't return the user's e-mail
+        return $profile;
     }
 
     /**
