@@ -137,7 +137,11 @@ class SocialNetworks extends Singleton
     public function revokeToken($social)
     {
         $connector = $this->getSocialApi($social);
-        return $connector->revokeToken();
+        if(method_exists($connector, "revokeToken")) {
+            return $connector->revokeToken();
+        } else {
+            return false;
+        }
     }
 
     /**
