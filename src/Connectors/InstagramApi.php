@@ -175,16 +175,14 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Instagram Api for users the user is followed by
-     * @param string $entity "user"
      * @param string $id    user id
-     * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $nextPageUrl
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
+    public function exportFollowers($id, $numberOfPages, $nextPageUrl) {
         $this->checkUser($id);
 
         $this->checkPagination($numberOfPages);
@@ -224,23 +222,22 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             }
         }
 
-        $followers["nextPageUrl"] = $nextPageUrl;
-
-        return $followers;
+        return array(
+            'followers' => $followers,
+            "nextPageUrl" => $nextPageUrl,
+        );
     }
 
     /**
      * Service that query to Instagram Api for users the user is following
-     * @param string $entity "user"
      * @param string $id    user id
-     * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $nextPageUrl
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
+    public function exportSubscribers($id, $numberOfPages, $nextPageUrl) {
         $this->checkUser($id);
         $this->checkPagination($numberOfPages);
 
@@ -279,13 +276,10 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             }
         }
 
-        $subscribers["nextPageUrl"] = $nextPageUrl;
-
-        return $subscribers;
-    }
-
-    public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
-        return;
+        return array(
+            'subscribers' => $subscribers,
+            "nextPageUrl" => $nextPageUrl,
+        );
     }
 
     /**
@@ -326,7 +320,6 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Instagram Api service for media files
-     * @param string $entity "user"
      * @param string $id    user id
      * @param integer $maxTotalResults.
      * @param integer $numberOfPages
@@ -335,7 +328,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportMedia($entity, $id, $maxTotalResults, $numberOfPages, $nextPageUrl)
+    public function exportUserMedia($id, $maxTotalResults, $numberOfPages, $nextPageUrl)
     {
         $this->checkUser($id);
         $this->checkPagination($numberOfPages, $maxTotalResults);
@@ -378,14 +371,14 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             }
         }
 
-        $files["nextPageUrl"] = $nextPageUrl;
-
-        return $files;
+        return array(
+            'media' => $files,
+            "nextPageUrl" => $nextPageUrl,
+        );
     }
 
     /**
      * Service that get the list of recent media liked by the owner
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxTotalResults
      * @param $numberOfPages
@@ -394,7 +387,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportMediaRecentlyLiked($entity, $id, $maxTotalResults, $numberOfPages, $nextPageUrl)
+    public function exportUserMediaRecentlyLiked($id, $maxTotalResults, $numberOfPages, $nextPageUrl)
     {
         $this->checkUser($id);
         $this->checkPagination($numberOfPages, $maxTotalResults);
@@ -439,17 +432,15 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             }
         }
 
-        $files["nextPageUrl"] = $nextPageUrl;
-
-        return $files;
-    }
-
-    public function importMedia($entity, $id, $parameters) {
-        return;
+        return array(
+            'media' => $files,
+            "nextPageUrl" => $nextPageUrl,
+        );
     }
 
     /**
-     * Service that publish a comment in an Instagram media
+     * Service that publish a comment in an user's Instagram media
+     * @param string $id    user id
      * @param array $parameters
      *      "content" => Text of the comment
      *      "media_id" => Instagram media's ID
@@ -457,7 +448,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function post($entity, $id, array $parameters) {
+    public function post($id, array $parameters) {
         if ((null === $parameters) || (!is_array($parameters)) || (count($parameters) == 0)) {
             throw new ConnectorConfigException("Invalid post parameters'");
         }
@@ -489,14 +480,13 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Instagram Api to get user relationship information
-     * @param string $entity "user"
      * @param string $id    user id
      * @param string $userId
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function getUserRelationship($entity, $id, $userId)
+    public function getUserRelationship($id, $userId)
     {
         $this->checkUser($userId);
 
@@ -514,7 +504,6 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that modify the relationship between the authenticated user and the target user.
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $userId
      * @param $action
@@ -522,7 +511,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function modifyUserRelationship($entity, $id, $userId, $action) {
+    public function modifyUserRelationship($id, $userId, $action) {
         $this->checkUser($id);
 
         $fields = "action=".$action;
@@ -540,7 +529,6 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that search for users
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $name
      * @param $maxTotalResults
@@ -550,7 +538,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function searchUsers($entity, $id, $name, $maxTotalResults, $numberOfPages, $nextPageUrl)
+    public function searchUsers($id, $name, $maxTotalResults, $numberOfPages, $nextPageUrl)
     {
         $this->checkUser($id);
         $this->checkName($name);
@@ -592,9 +580,10 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             }
         }
 
-        $users["nextPageUrl"] = $nextPageUrl;
-
-        return $users;
+        return array(
+            'users' => $users,
+            "nextPageUrl" => $nextPageUrl,
+        );
     }
 
     /**

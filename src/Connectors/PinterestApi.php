@@ -1015,21 +1015,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         return array("status"=>"success");
     }
 
-    public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportPosts() method.
-    }
-
-    public function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportMedia() method.
-    }
-
-    public function importMedia($entity, $id, $parameters)
-    {
-        // TODO: Implement importMedia() method.
-    }
-
     public function post($entity, $id, array $parameters)
     {
         // TODO: Implement post() method.

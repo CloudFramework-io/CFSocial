@@ -13,10 +13,5 @@ interface SocialNetworkInterface {
     function setAccessToken(array $credentials);
     function checkCredentials(array $credentials);
     function getProfile($id);
-    function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
-    function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
-    function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
-    function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
-    function importMedia($entity, $id, $parameters);
-    function post($entity, $id, array $parameters);
+    function post($id, array $parameters);
 }

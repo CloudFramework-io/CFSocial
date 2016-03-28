@@ -363,16 +363,6 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         return $friends;
     }
 
-    public function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportMedia() method.
-    }
-
-    public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportPosts() method.
-    }
-
     /**
      * Service that upload a media file (image/video) to Google+
      * @param string $entity "user"

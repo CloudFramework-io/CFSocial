@@ -212,7 +212,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Google Api for people in user circles
-     * @param string $entity "user"
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -222,7 +221,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserPeopleInAllCircles($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkExpiredToken();
         $this->checkUser($id);
@@ -243,8 +242,8 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
                 $peopleList = $plusDomainsService->people->listPeople($id, "circled", $parameters);
 
-                if (!isset($people["total"])) {
-                    $people["total"] = $peopleList->getTotalItems();
+                if (!isset($total)) {
+                    $total = $peopleList->getTotalItems();
                 }
 
                 $people[$count] = array();
@@ -265,14 +264,11 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pageToken);
 
-        $people["pageToken"] = $pageToken;
-
-        return $people;
-    }
-
-    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportSubscribers() method.
+        return array(
+            'people' => $people,
+            "totalCount" => $total,
+            "pageToken" => $pageToken,
+        );
     }
 
     /**
@@ -284,7 +280,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPeopleInPost($entity, $id, $postId)
+    public function exportUserPeopleInPost($id, $postId)
     {
         $this->checkExpiredToken();
         $this->checkUser($id);
@@ -300,20 +296,20 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             $resharers = $plusDomainsService->people->listByActivity($postId, "resharers");
             $sharedto = $plusDomainsService->people->listByActivity($postId, "sharedto");
 
-            $people["plusoners"] = array("total" => (null === $plusoners->getTotalItems())?0:$plusoners->getTotalItems());
-            $people["resharers"] = array("total" => (null === $resharers->getTotalItems())?0:$resharers->getTotalItems());
-            $people["sharedto"] = array("total" => (null === $sharedto->getTotalItems())?0:$sharedto->getTotalItems());
+            $people["plusoners"] = array("people" => array(), "total" => (null === $plusoners->getTotalItems())?0:$plusoners->getTotalItems());
+            $people["resharers"] = array("people" => array(), "total" => (null === $resharers->getTotalItems())?0:$resharers->getTotalItems());
+            $people["sharedto"] = array("people" => array(), "total" => (null === $sharedto->getTotalItems())?0:$sharedto->getTotalItems());
 
             foreach($plusoners->getItems() as $plusoner) {
-                $people["plusoners"][] = $plusoner->toSimpleObject();
+                $people["plusoners"]["people"][] = $plusoner->toSimpleObject();
             }
 
             foreach($resharers->getItems() as $resharer) {
-                $people["resharers"][] = $resharer->toSimpleObject();
+                $people["resharers"]["people"][] = $resharer->toSimpleObject();
             }
 
             foreach($sharedto->getItems() as $shared) {
-                $people["sharedto"][] = $shared->toSimpleObject();
+                $people["sharedto"]["people"][] = $shared->toSimpleObject();
             }
         } catch(\Exception $e) {
             throw new ConnectorServiceException("Error getting people in Google+ post: " . $e->getMessage(), $e->getCode());
@@ -324,7 +320,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Google Api for posts/activities of a user
-     * @param string $entity "user"
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -334,7 +329,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserPosts($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkExpiredToken();
         $this->checkUser($id);
@@ -372,9 +367,10 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pageToken);
 
-        $activities["pageToken"] = $pageToken;
-
-        return $activities;
+        return array(
+            'posts' => $activities,
+            "pageToken" => $pageToken,
+        );
     }
 
     /**
@@ -421,7 +417,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Google Api Drive service for images
-     * @param string $entity "user"
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -431,7 +426,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserMedia($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkExpiredToken();
         $this->checkUser($id);
@@ -471,14 +466,14 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pageToken);
 
-        $files["pageToken"] = $pageToken;
-
-        return $files;
+        return array(
+            'media' => $files,
+            "pageToken" => $pageToken,
+        );
     }
 
     /**
      * Service that upload a media file (image/video) to Google+
-     * @param string $entity "user"
      * @param string $id    user id
      * @param string $parameters
      *      "media_type"    =>      "url"|"path"
@@ -488,7 +483,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function importMedia($entity, $id, $parameters)
+    public function uploadUserMedia($id, $parameters)
     {
         $this->checkExpiredToken();
         $this->checkUser($id);
@@ -586,7 +581,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param string $entity "user"
      * @param string $id    user id
      * @param array $parameters
-     *      "user_id"    => User whose google domain the stream will be published in
      *      "content"   => Text of the comment
      *      "access_type" => The type of entry describing to whom access to new post/activity is granted
      *              "person"          => Need a personId parameter
@@ -605,15 +599,11 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function post($entity, $id, array $parameters) {
+    public function post($id, array $parameters) {
         $this->checkExpiredToken();
 
         if ((null === $parameters) || (!is_array($parameters)) || (count($parameters) == 0)) {
             throw new ConnectorConfigException("Invalid post parameters'");
-        }
-
-        if ((!isset($parameters["user_id"])) || (null === $parameters["user_id"]) || ("" === $parameters["user_id"])) {
-            throw new ConnectorConfigException("'user_id' post parameter is required");
         }
 
         if ((!isset($parameters["content"])) || (null === $parameters["content"]) || ("" === $parameters["content"])) {
@@ -714,7 +704,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
         try {
             $plusDomainsService = new \Google_Service_PlusDomains($this->client);
-            $activity = $plusDomainsService->activities->insert($parameters["user_id"], $postBody);
+            $activity = $plusDomainsService->activities->insert($id, $postBody);
         } catch(\Exception $e) {
             throw new ConnectorServiceException("Error creating post: " . $e->getMessage(), $e->getCode());
         }
@@ -724,7 +714,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Google Api for a list of circles for an user
-     * @param string $entity "user"
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -734,7 +723,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportCircles($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserCircles($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkExpiredToken();
         $this->checkUser($id);
@@ -758,7 +747,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
                 $total = $circlesList->getTotalItems();
 
                 foreach($circlesList->getItems() as $circle) {
-                    $circles[] = json_decode(json_encode($circle->toSimpleObject()), true);
+                    $circles[$count][] = json_decode(json_encode($circle->toSimpleObject()), true);
                 }
                 $count++;
 
@@ -782,7 +771,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Google Api for people in an specific circle
-     * @param string $entity "user"
      * @param string $id    user id
      * @param string $circleId
      * @param integer $maxResultsPerPage maximum elements per page
@@ -793,7 +781,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPeopleInCircle($entity, $id, $circleId, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserPeopleInCircle($id, $circleId, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkExpiredToken();
         $this->checkUser($id);
@@ -819,8 +807,8 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
                 $peopleList = $plusDomainsService->people->listByCircle($circleId, $parameters);
 
-                if (!isset($people["total"])) {
-                    $people["total"] = $peopleList->getTotalItems();
+                if (!isset($total)) {
+                    $total = $peopleList->getTotalItems();
                 }
 
                 $people[$count] = array();
@@ -841,9 +829,11 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pageToken);
 
-        $people["pageToken"] = $pageToken;
-
-        return $people;
+        return array(
+            "people" => $people,
+            "totalCount" => $total,
+            "pageToken" => $pageToken,
+        );
     }
 
     /**

@@ -145,14 +145,8 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         return $response["summary"]["total_count"];
     }
 
-    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
-    {
-        // TODO: Implement exportSubscribers() method.
-    }
-
     /**
      * Service that query to Facebook Api a followers count
-     * @param $entity
      * @param $id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -161,7 +155,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserPosts($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
@@ -206,10 +200,10 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             }
         } while ($pageToken);
 
-
-        $posts["pageToken"] = $pageToken;
-
-        return $posts;
+        return array(
+            'posts' => $posts,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
@@ -245,22 +239,16 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that upload a media file (photo) to Facebook
-     * @param string $entity "user"|"page
-     * @param string $id    user or page id
+     * Service that upload a photo to Facebook user's album
+     * @param string $id    user id
      * @param $parameters
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function importMedia($entity, $id, $parameters)
+    public function uploadUserPhoto($id, $parameters)
     {
-        if (SocialNetworks::ENTITY_USER === $entity) {
-            $this->checkUser($id);
-        } else {
-            $this->checkPage($id);
-            $pageinfo = $this->getPage($entity, $id);
-        }
+        $this->checkUser($id);
 
         if ((null === $parameters["media_type"]) || ("" === $parameters["media_type"])) {
             throw new ConnectorConfigException("Media type must be 'url' or 'path'");
@@ -308,17 +296,82 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         try {
             if (null === $parameters["album_id"]) {
-                if (SocialNetworks::ENTITY_PAGE == $entity) {
-                    $response = $this->client->post("/".$id."/photos", $params, $pageinfo["access_token"]);
-                } else {
-                    $response = $this->client->post("/".self::FACEBOOK_SELF_USER."/photos", $params, $this->accessToken);
-                }
+                $response = $this->client->post("/".self::FACEBOOK_SELF_USER."/photos", $params, $this->accessToken);
             } else {
-                if (SocialNetworks::ENTITY_PAGE == $entity) {
-                    $response = $this->client->post("/".$parameters["album_id"]."/photos", $params, $pageinfo["access_token"]);
+                $response = $this->client->post("/".$parameters["album_id"]."/photos", $params, $this->accessToken);
+            }
+        } catch (Exception $e) {
+            throw new ConnectorServiceException("Error importing '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
+        }
+
+        $graphNode = $response->getGraphNode();
+        $media = array("media_id" => $graphNode["id"]);
+
+        return $media;
+    }
+
+    /**
+     * Service that upload a photo to Facebook user's page album
+     * @param string $id    page id
+     * @param $parameters
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function uploadPagePhoto($id, $parameters)
+    {
+        $this->checkPage($id);
+        $pageinfo = $this->getPage($id);
+
+        if ((null === $parameters["media_type"]) || ("" === $parameters["media_type"])) {
+            throw new ConnectorConfigException("Media type must be 'url' or 'path'");
+        } elseif ((null === $parameters["value"]) || ("" === $parameters["value"])) {
+            throw new ConnectorConfigException($parameters["media_type"]." value is required");
+        } elseif ("path" === $parameters["media_type"]) {
+            if (!file_exists($parameters["value"])) {
+                throw new ConnectorConfigException("file doesn't exist");
+            } else {
+                $mimeType = SocialNetworks::mime_content_type($parameters["value"]);
+
+                if (false === strpos($mimeType, "image/")) {
+                    throw new ConnectorConfigException("file must be an image");
                 } else {
-                    $response = $this->client->post("/".$parameters["album_id"]."/photos", $params, $this->accessToken);
+                    $filesize = filesize($parameters["value"]);
+                    if ($filesize > SocialNetworks::MAX_IMPORT_FILE_SIZE) {
+                        throw new ConnectorConfigException("Maximum file size is " . (SocialNetworks::MAX_IMPORT_FILE_SIZE_MB) . "MB");
+                    }
                 }
+            }
+        } else {
+            $tempMedia = tempnam("bloombees","media");
+            file_put_contents($tempMedia, file_get_contents($parameters["value"]));
+
+            $mimeType = SocialNetworks::mime_content_type($parameters["value"]);
+
+            if (false === strpos($mimeType, "image/")) {
+                throw new ConnectorConfigException("file must be an image");
+            } else {
+                $filesize = filesize($tempMedia);
+                if ($filesize > SocialNetworks::MAX_IMPORT_FILE_SIZE) {
+                    throw new ConnectorConfigException("Maximum file size is " . (SocialNetworks::MAX_IMPORT_FILE_SIZE_MB) . "MB");
+                }
+            }
+        }
+
+        $params = array();
+        $params["message"] = $parameters["title"];
+
+        if ("url" === $parameters["media_type"]) {
+            $params["url"] = $parameters["value"];
+        } else {
+            $params["source"] = $this->client->fileToUpload($parameters["value"]);
+        }
+
+        try {
+            if (null === $parameters["album_id"]) {
+                $response = $this->client->post("/".$id."/photos", $params, $pageinfo["access_token"]);
+            } else {
+                $response = $this->client->post("/".$parameters["album_id"]."/photos", $params, $pageinfo["access_token"]);
             }
         } catch (Exception $e) {
             throw new ConnectorServiceException("Error importing '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
@@ -332,8 +385,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Service that query to Facebook API for user photos
-     * @param string $entity "user"|"page"
-     * @param string $id    user or page id
+     * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page
@@ -342,25 +394,16 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserPhotos($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
-        if (SocialNetworks::ENTITY_USER === $entity) {
-            $this->checkUser($id);
-        } else {
-            $this->checkPage($id);
-            $pageinfo = $this->getPage($entity, $id);
-        }
+        $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
         $photos = array();
         $count = 0;
         do {
             try {
-                if (SocialNetworks::ENTITY_USER === $entity) {
-                    $endpoint = "/" . self::FACEBOOK_SELF_USER . "/photos?type=uploaded&limit=" . $maxResultsPerPage;
-                } else {
-                    $endpoint = "/" . $id . "/photos?type=uploaded&limit=" . $maxResultsPerPage;
-                }
+                $endpoint = "/" . self::FACEBOOK_SELF_USER . "/photos?type=uploaded&limit=" . $maxResultsPerPage;
 
                 if ($pageToken) {
                     $endpoint .= "&after=".$pageToken;
@@ -387,15 +430,70 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             }
         } while ($pageToken);
 
-        $photos["pageToken"] = $pageToken;
+        return array(
+            'photos' => $photos,
+            "pageToken" => $pageToken
+        );
+    }
 
-        return $photos;
+    /**
+     * Service that query to Facebook API for user photos
+     * @param string $id    page id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function exportPagePhotos($id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkPage($id);
+        $pageinfo = $this->getPage($id);
+
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+
+        $photos = array();
+        $count = 0;
+        do {
+            try {
+                $endpoint = "/" . $id . "/photos?type=uploaded&limit=" . $maxResultsPerPage;
+
+                if ($pageToken) {
+                    $endpoint .= "&after=".$pageToken;
+                }
+
+                $response = $this->client->get($endpoint, (!isset($pageinfo)?$this->accessToken:$pageinfo["access_token"]));
+
+                $photosEdge = $response->getGraphEdge();
+
+                foreach ($photosEdge as $photo) {
+                    $photos[$count][] = $photo->asArray();
+                }
+                $count++;
+
+                $pageToken = $photosEdge->getNextCursor();
+
+                // If number of pages == 0, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting photos: " . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+
+        return array(
+            'photos' => $photos,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that create a post in Facebook user's feed
-     * @param string $entity "user"|"page"
-     * @param string $id    user or page id
+     * @param string $id    user id
      * @param array $parameters
      *      "message"           =>  Text of the post (mandatory)
      *      "link"              =>  URL
@@ -404,20 +502,39 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @return array
      * @throws ConnectorServiceException
      */
-    public function post($entity, $id, array $parameters) {
-        if (SocialNetworks::ENTITY_USER === $entity) {
-            $this->checkUser($id);
-        } else {
-            $this->checkPage($id);
-            $pageinfo = $this->getPage($entity, $id);
-        }
+    public function post($id, array $parameters) {
+        $this->checkUser($id);
 
         try {
-            if (SocialNetworks::ENTITY_USER === $entity) {
-                $response = $this->client->post("/" . self::FACEBOOK_SELF_USER . "/feed", $parameters, $this->accessToken);
-            } else {
-                $response = $this->client->post("/" . $id . "/feed", $parameters, $pageinfo["access_token"]);
-            }
+            $response = $this->client->post("/" . self::FACEBOOK_SELF_USER . "/feed", $parameters, $this->accessToken);
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException('Error creating a post: ' . $e->getMessage(), $e->getCode());
+        }
+
+        $graphNode = $response->getGraphNode();
+
+        $post = array("post_id" => $graphNode["id"]);
+
+        return $post;
+    }
+
+    /**
+     * Service that create a post in Facebook user's page feed
+     * @param string $id    page id
+     * @param array $parameters
+     *      "message"           =>  Text of the post (mandatory)
+     *      "link"              =>  URL
+     *      "object_attachment" =>  Facebook ID for an existing picture in the person's photo albums to use as the thumbnail image.
+     *      They must be the owner of the photo, and the photo cannot be part of a message attachment.
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function pagePost($id, array $parameters) {
+        $this->checkPage($id);
+        $pageinfo = $this->getPage($id);
+
+        try {
+            $response = $this->client->post("/" . $id . "/feed", $parameters, $pageinfo["access_token"]);
         } catch(\Exception $e) {
             throw new ConnectorServiceException('Error creating a post: ' . $e->getMessage(), $e->getCode());
         }
@@ -431,32 +548,51 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Service that creates a new photo album for the user in facebook
-     * @param string $entity "user"|"page"
-     * @param string $id    user or page id
+     * @param string $id    user id
      * @param $title
      * @param $caption
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function createPhotosAlbum($entity, $id, $title, $caption) {
-        if (SocialNetworks::ENTITY_USER === $entity) {
-            $this->checkUser($id);
-        } else {
-            $this->checkPage($id);
-            $pageinfo = $this->getPage($entity, $id);
-        }
+    public function createUserPhotosAlbum($id, $title, $caption) {
+        $this->checkUser($id);
 
         $parameters = array();
         $parameters["name"] = $title;
         $parameters["message"] = $caption;
 
         try {
-            if (SocialNetworks::ENTITY_USER === $entity) {
-                $response = $this->client->post("/".self::FACEBOOK_SELF_USER."/albums", $parameters, $this->accessToken);
-            } else {
-                $response = $this->client->post("/".$id."/albums", $parameters, $pageinfo["access_token"]);
-            }
+            $response = $this->client->post("/".self::FACEBOOK_SELF_USER."/albums", $parameters, $this->accessToken);
+        } catch (Exception $e) {
+            throw new ConnectorServiceException("Error creating album '".$title."'': " . $e->getMessage(), $e->getCode());
+        }
+
+        $graphNode = $response->getGraphNode();
+        $album = array("album_id" => $graphNode["id"]);
+
+        return $album;
+    }
+
+    /**
+     * Service that creates a new photo album for an user's page in facebook
+     * @param string $id    user id
+     * @param $title
+     * @param $caption
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function createPagePhotosAlbum($id, $title, $caption) {
+        $this->checkPage($id);
+        $pageinfo = $this->getPage($id);
+
+        $parameters = array();
+        $parameters["name"] = $title;
+        $parameters["message"] = $caption;
+
+        try {
+            $response = $this->client->post("/".$id."/albums", $parameters, $pageinfo["access_token"]);
         } catch (Exception $e) {
             throw new ConnectorServiceException("Error creating album '".$title."'': " . $e->getMessage(), $e->getCode());
         }
@@ -469,8 +605,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Service that get information of all user's photo albums in facebook
-     * @param string $entity "user"|"page"
-     * @param string $id    user or page id
+     * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @param $pageToken
@@ -478,23 +613,15 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPhotosAlbumsList($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
-        if (SocialNetworks::ENTITY_USER === $entity) {
-            $this->checkUser($id);
-        } else {
-            $this->checkPage($id);
-        }
+    public function exportPhotosUserAlbumsList($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
         $albums = array();
         $count = 0;
         do {
             try {
-                if (SocialNetworks::ENTITY_USER === $entity) {
-                    $endpoint = "/" . self::FACEBOOK_SELF_USER . "/albums?limit=" . $maxResultsPerPage;
-                } else {
-                    $endpoint = "/" . $id . "/albums?limit=" . $maxResultsPerPage;
-                }
+                $endpoint = "/" . self::FACEBOOK_SELF_USER . "/albums?limit=" . $maxResultsPerPage;
 
                 if ($pageToken) {
                     $endpoint .= "&after=".$pageToken;
@@ -522,15 +649,65 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         } while ($pageToken);
 
 
-        $albums["pageToken"] = $pageToken;
-
-        return $albums;
+        return array(
+            "albums" => $albums,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
-     * Service that gets photos from an album owned by user in facebook
-     * @param string $entity "user"|"page"
-     * @param string $id    user or page id
+     * Service that get information of all user's page photo albums in facebook
+     * @param string $id    page id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function exportPhotosPageAlbumsList($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $this->checkPage($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+
+        $albums = array();
+        $count = 0;
+        do {
+            try {
+                $endpoint = "/" . $id . "/albums?limit=" . $maxResultsPerPage;
+
+                if ($pageToken) {
+                    $endpoint .= "&after=".$pageToken;
+                }
+
+                $response = $this->client->get($endpoint, $this->accessToken);
+
+                $albumsEdge = $response->getGraphEdge();
+
+                foreach ($albumsEdge as $album) {
+                    $albums[$count][] = $album->asArray();
+                }
+                $count++;
+
+                $pageToken = $albumsEdge->getNextCursor();
+
+                // If number of pages == 0, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting photo albums: " . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+
+        return array(
+            "albums" => $albums,
+            "pageToken" => $pageToken
+        );
+    }
+
+    /**
+     * Service that gets photos from an album owned by user or in a page in facebook
      * @param $albumId
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -538,12 +715,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @return array
      * @throws \Exception
      */
-    public function exportPhotosFromAlbum($entity, $id, $albumId, $maxResultsPerPage, $numberOfPages, $pageToken) {
-        if (SocialNetworks::ENTITY_USER === $entity) {
-            $this->checkUser($id);
-        } else {
-            $this->checkPage($id);
-        }
+    public function exportPhotosFromAlbum($albumId, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkAlbum($albumId);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
@@ -578,15 +750,14 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             }
         } while ($pageToken);
 
-
-        $photos["pageToken"] = $pageToken;
-
-        return $photos;
+        return array(
+            "photos" => $photos,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that gets all pages this person administers/is an admin for
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -595,7 +766,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPages($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserPages($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
@@ -613,7 +784,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
                 $pagesEdge = $response->getGraphEdge();
 
                 foreach ($pagesEdge as $page) {
-                    $pages[] = $page->asArray();
+                    $pages[$count][] = $page->asArray();
                 }
                 $count++;
 
@@ -638,12 +809,11 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Service that query to Facebook Api to get page settings
-     * @param $entity   "page"
      * @param $id       page id
      * @return array
      * @throws ConnectorServiceException
      */
-    public function getPage($entity, $id) {
+    public function getPage($id) {
         $this->checkPage($id);
 
         try {
