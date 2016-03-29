@@ -176,13 +176,14 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     /**
      * Service that query to Instagram Api for users the user is followed by
      * @param string $id    user id
-     * @param integer $numberOfPages
-     * @param string $nextPageUrl
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowers($id, $numberOfPages, $nextPageUrl) {
+    public function exportFollowers($id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
         $this->checkUser($id);
 
         $this->checkPagination($numberOfPages);
@@ -231,13 +232,14 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     /**
      * Service that query to Instagram Api for users the user is following
      * @param string $id    user id
-     * @param integer $numberOfPages
-     * @param string $nextPageUrl
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportSubscribers($id, $numberOfPages, $nextPageUrl) {
+    public function exportSubscribers($id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
         $this->checkUser($id);
         $this->checkPagination($numberOfPages);
 
@@ -458,12 +460,12 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorConfigException("'content' parameter is required");
         }
 
-        if ((!array_key_exists('media_id', $parameters)) ||
-            (null === $parameters["media_id"]) || (empty($parameters["media_id"]))) {
-            throw new ConnectorConfigException("'media_id' parameter is required");
+        if ((!array_key_exists('attachment', $parameters)) ||
+            (null === $parameters["attachment"]) || (empty($parameters["attachment"]))) {
+            throw new ConnectorConfigException("'attachment' parameter is required");
         }
 
-        $url = self::INSTAGRAM_API_MEDIA_URL.$parameters["media_id"]."/comments";
+        $url = self::INSTAGRAM_API_MEDIA_URL.$parameters["attachment"]."/comments";
 
         $fields = "access_token=".$this->accessToken.
                     "&text=".$parameters["content"];

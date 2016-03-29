@@ -194,12 +194,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Twitter Api to get user home timeline
-     * @param string $entity "user"
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
      */
-    public function getTimeline($entity, $id)
+    public function getUserTimeline($id)
     {
         $response = $this->client->get("statuses/home_timeline");
 
@@ -213,12 +212,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Twitter Api to get single tweet information
-     * @param string $entity "tweet"
      * @param string $id    tweet id
      * @return array
      * @throws ConnectorServiceException
      */
-    public function getTweet($entity, $id)
+    public function getUserTweet($id)
     {
         $response = $this->client->get("statuses/show/".$id);
 
@@ -232,12 +230,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Twitter Api to delete a tweet
-     * @param string $entity "tweet"
      * @param string $id    tweet id
      * @return array
      * @throws ConnectorServiceException
      */
-    public function deleteTweet($entity, $id)
+    public function deleteUserTweet($id)
     {
         $response = $this->client->post("statuses/destroy/".$id);
 
@@ -251,7 +248,6 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Twitter Api for users the user is followed by
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -260,7 +256,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportFollowers($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
@@ -301,14 +297,14 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pageToken);
 
-        $followers["pageToken"] = $pageToken;
-
-        return $followers;
+        return array(
+            'followers' => $followers,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that query to Twitter Api for users the user is following (friends)
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -317,7 +313,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportSubscribers($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
@@ -358,14 +354,14 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pageToken);
 
-        $friends["pageToken"] = $pageToken;
-
-        return $friends;
+        return array(
+            'friends' => $friends,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
-     * Service that upload a media file (image/video) to Google+
-     * @param string $entity "user"
+     * Service that upload a media file (image/video) to Twitter
      * @param string $id    user id
      * @param string $parameters
      *      "media_type"    =>      "url"|"path"
@@ -375,7 +371,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function importMedia($entity, $id, $parameters)
+    public function uploadUserMedia($id, $parameters)
     {
         if ((null === $parameters["media_type"]) || ("" === $parameters["media_type"])) {
             throw new ConnectorConfigException("Media type must be 'url' or 'path'");
@@ -429,18 +425,26 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that create a tweet in Twitter
-     * @param string $entity "user"
      * @param string $id    user id
      * @param array $parameters
-     *      "status"                    =>  Text of the tweet (required)
+     *      "content"                   =>  Text of the tweet (required)
+     *      "attachment"                =>  String of media ids separated by comma
      *      "in_reply_to_status_id"     =>  Id of tweet this new tweet is answering
-     *      "media_ids"                 =>  String of media ids separated by comma
      * @return array
      * @throws ConnectorServiceException
      */
-    public function post($entity, $id, array $parameters)
+    public function post($id, array $parameters)
     {
-        $response = $this->client->post('statuses/update', $parameters);
+        $params = array();
+        $params["status"] = $parameters["content"];
+        if (isset($parameters["attachment"])) {
+            $params["media_ids"] = $parameters["attachment"];
+        }
+        if (isset($parameters["in_reply_to_status_id"])) {
+            $params["in_reply_to_status_id"] = $parameters["in_reply_to_status_id"];
+        }
+
+        $response = $this->client->post('statuses/update', $params);
 
         if (200 === $this->client->getLastHttpCode()) {
             return json_decode(json_encode($response),true);

@@ -160,30 +160,32 @@ class SocialNetworks extends Singleton
      * Service that query to a social network api to get followers of an user
      * @param string $social
      * @param string $id    user id
+     * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return mixed
      * @throws \Exception
      */
-    public function exportFollowers($social, $id, $numberOfPages, $pageToken)
+    public function exportFollowers($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $connector = $this->getSocialApi($social);
-        return $connector->exportFollowers($id, $numberOfPages, $pageToken);
+        return $connector->exportFollowers($id, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
      * Service that query to a social network api to get subscribers
      * @param string $social
      * @param string $id    user id
+     * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
-     * @param string $pageToken/$nextPageUrl Indicates a page token / specific page for pagination
+     * @param string $pageToken Indicates a specific page for pagination
      * @return mixed
      * @throws \Exception
      */
-    public function exportSubscribers($social, $id, $numberOfPages, $pageToken)
+    public function exportSubscribers($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $connector = $this->getSocialApi($social);
-        return $connector->exportSubscribers($id, $numberOfPages, $pageToken);
+        return $connector->exportSubscribers($id, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
@@ -299,6 +301,9 @@ class SocialNetworks extends Singleton
      * @param array $parameters
      * GOOGLE
      *      "content"   => Text of the comment
+     *      "attachment":
+     *          "0": "link" | "image" | "video"
+     *          "1": url or path for a file
      *      "access_type" => The type of entry describing to whom access to new post/activity is granted
      *              "person"          => Need a personId parameter
      *              "circle"          => Need a circleId parameter
@@ -306,19 +311,20 @@ class SocialNetworks extends Singleton
      *              "extendedCircles" => Access to members of all the person's circles, plus all of the people in their circles
      *              "domain"          => Access to members of the person's Google Apps domain
      *              "public"          => Access to anyone on the web
-     *      "attachment":
-     *          "0": "link" | "image" | "video"
-     *          "1": url or path for a file
      *      "person_id"  => Google + user whose domain the stream will be published in (mandatory in case of access_type = "person")
      *      "circle_id"  => Google circle where the stream will be published in (mandatory in case of access_type = "circle")
      * INSTAGRAM
      *      "content"   => Text of the comment
-     *      "media_id"   => Instagram media's ID
+     *      "attachment"   => Instagram media's ID
      * FACEBOOK
-     *      "message"           =>  Text of the post (mandatory)
+     *      "content"           =>  Text of the post (mandatory)
+     *      "attachment" =>  Facebook ID for an existing picture in the person's photo albums to use as the thumbnail image.
+     *                      They must be the owner of the photo, and the photo cannot be part of a message attachment.
      *      "link"              =>  URL
-     *      "object_attachment" =>  Facebook ID for an existing picture in the person's photo albums to use as the thumbnail image.
-     *      They must be the owner of the photo, and the photo cannot be part of a message attachment.
+     * TWITTER
+     *      "content"                   =>  Text of the tweet (required)
+     *      "attachment"                =>  String of media ids separated by comma
+     *      "in_reply_to_status_id"     =>  Id of tweet this new tweet is answering
      * @return mixed
      * @throws \Exception
      */
@@ -667,7 +673,6 @@ class SocialNetworks extends Singleton
     /**
      * Service that export / search the user's boards in a social network
      * @param $social
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $query
      * @param $maxResultsPerPage
@@ -676,44 +681,41 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportBoards($social, $entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserBoards($social, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $connector = $this->getSocialApi($social);
-        return $connector->exportBoards($entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportUserBoards($id, $query, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
      * Service that query to a social network api to get settings of a board
      * @param string $social
-     * @param string $entity    "board"
      * @param $username
      * @param $boardname
      * @return mixed
      * @throws \Exception
      */
-    public function getBoard($social, $entity, $username, $boardname)    {
+    public function getUserBoard($social, $entity, $username, $boardname)    {
         $connector = $this->getSocialApi($social);
-        return $connector->getBoard($entity, $username, $boardname);
+        return $connector->getUserBoard($entity, $username, $boardname);
     }
 
     /**
      * Service that creates a new board for the user in a social network
      * @param $social
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $name
      * @param $description
      * @return mixed
      * @throws \Exception
      */
-    public function createBoard($social, $entity, $id, $name, $description) {
+    public function createUserBoard($social, $id, $name, $description) {
         $connector = $this->getSocialApi($social);
-        return $connector->createBoard($entity, $id, $name, $description);
+        return $connector->createUserBoard($id, $name, $description);
     }
 
     /**
      * Service that edit an existing board in a social network
      * @param $social
-     * @param string $entity "board"
      * @param $username
      * @param $boardname
      * @param $name
@@ -721,30 +723,28 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function editBoard($social, $entity, $username, $boardname, $name, $description) {
+    public function editUserBoard($social, $username, $boardname, $name, $description) {
         $connector = $this->getSocialApi($social);
-        return $connector->editBoard($entity, $username, $boardname, $name, $description);
+        return $connector->editUserBoard($username, $boardname, $name, $description);
     }
 
     /**
      * Service that delete an existing board in a social network
      * @param $social
-     * @param string $entity "board"
      * @param $username
      * @param $boardname
      * @return mixed
      * @throws \Exception
      */
-    public function deleteBoard($social, $entity, $username, $boardname) {
+    public function deleteUserBoard($social, $username, $boardname) {
         $connector = $this->getSocialApi($social);
-        return $connector->deleteBoard($entity, $username, $boardname);
+        return $connector->deleteUserBoard($username, $boardname);
     }
 
     /**
      * Service that export / search the user's pins in a social network
      * @param $social
-     * @param string $entity "user"|"page"
-     * @param string $id    user or page id
+     * @param string $id    user id
      * @param $query
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -752,16 +752,15 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportPins($social, $entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserPins($social, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $connector = $this->getSocialApi($social);
-        return $connector->exportPins($entity, $id, $query, false, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportUserPins($id, $query, false, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
      * Service that export / search the pins user has liked in a social network
      * @param $social
-     * @param string $entity "user"|"page"
-     * @param string $id    user or page id
+     * @param string $id    user id
      * @param $query
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -769,15 +768,14 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportPinsLiked($social, $entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserPinsLiked($social, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $connector = $this->getSocialApi($social);
-        return $connector->exportPins($entity, $id, $query, true, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportUserPins($id, $query, true, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
      * Service that export pins from a board in a social network
      * @param $social
-     * @param string $entity    "board"
      * @param $username
      * @param $boardname
      * @param $maxResultsPerPage
@@ -786,28 +784,26 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportPinsFromBoard($social, $entity, $username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportPinsFromUserBoard($social, $username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $connector = $this->getSocialApi($social);
-        return $connector->exportPinsFromBoard($entity, $username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportPinsFromUserBoard($username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
      * Service that query to a social network api to get settings of a pin
      * @param string $social
-     * @param string $entity    "pin"
      * @param string $id    pin id
      * @return mixed
      * @throws \Exception
      */
-    public function getPin($social, $entity, $id)    {
+    public function getUserPin($social, $id) {
         $connector = $this->getSocialApi($social);
-        return $connector->getPin($entity, $id);
+        return $connector->getUserPin($id);
     }
 
     /**
      * Service that creates a new pin for the user in a social network
      * @param $social
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $note
      * @param $link
@@ -817,15 +813,14 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function createPin($social, $entity, $id, $username, $boardname, $note, $link, $imageType, $image) {
+    public function createUserPin($social, $id, $username, $boardname, $note, $link, $imageType, $image) {
         $connector = $this->getSocialApi($social);
-        return $connector->createPin($entity, $id, $username, $boardname, $note, $link, $imageType, $image);
+        return $connector->createUserPin($id, $username, $boardname, $note, $link, $imageType, $image);
     }
 
     /**
      * Service that edit an existing pin in a social network
      * @param $social
-     * @param string $entity "pin"
      * @param string $id    pin id
      * @param string $board
      * @param $note
@@ -833,28 +828,26 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function editPin($social, $entity, $id, $board, $note, $link) {
+    public function editUserPin($social, $id, $board, $note, $link) {
         $connector = $this->getSocialApi($social);
-        return $connector->editPin($entity, $id, $board, $note, $link);
+        return $connector->editUserPin($id, $board, $note, $link);
     }
 
     /**
      * Service that delete an existing pin in a social network
      * @param $social
-     * @param string $entity "pin"
      * @param string $id    pin id
      * @return mixed
      * @throws \Exception
      */
-    public function deletePin($social, $entity, $id) {
+    public function deleteUserPin($social, $id) {
         $connector = $this->getSocialApi($social);
-        return $connector->deletePin($entity, $id);
+        return $connector->deleteUserPin($id);
     }
 
     /**
      * Service that export the boards that the authenticated user follows in a social network
      * @param $social
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -862,15 +855,14 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportFollowingBoards($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserFollowingBoards($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $connector = $this->getSocialApi($social);
-        return $connector->exportFollowingBoards($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportUserFollowingBoards($id, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
      * Service that export the topics that the authenticated user follows in a social network
      * @param $social
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -878,24 +870,23 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportFollowingInterests($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserFollowingInterests($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $connector = $this->getSocialApi($social);
-        return $connector->exportFollowingInterests($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportUserFollowingInterests($id, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
      * Service that modify the relationship between the authenticated user and the target board in a social network.
      * @param $social
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $boardId
      * @param $action
      * @return mixed
      * @throws \Exception
      */
-    public function modifyBoardRelationship($social, $entity, $id, $boardId, $action) {
+    public function modifyBoardRelationship($social, $id, $boardId, $action) {
         $connector = $this->getSocialApi($social);
-        return $connector->modifyBoardRelationship($entity, $id, $boardId, $action);
+        return $connector->modifyBoardRelationship($id, $boardId, $action);
     }
 
     /******************************************************************************************************
@@ -904,41 +895,38 @@ class SocialNetworks extends Singleton
 
     /**
      * Service that gets the home timeline of the user
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $id
      * @return mixed
      * @throws \Exception
      */
-    public function getTimeline($social, $entity, $id) {
+    public function getUserTimeline($social, $id) {
         $connector = $this->getSocialApi($social);
-        return $connector->getTimeline($entity, $id);
+        return $connector->getUserTimeline($id);
     }
 
     /**
      * Service that gets a single tweet information
-     * @param string $entity "tweet"
      * @param string $id    tweet id
      * @param $id
      * @return mixed
      * @throws \Exception
      */
-    public function getTweet($social, $entity, $id) {
+    public function getUserTweet($social, $id) {
         $connector = $this->getSocialApi($social);
-        return $connector->getTweet($entity, $id);
+        return $connector->getUserTweet($id);
     }
 
     /**
      * Service that deletes a tweet
-     * @param string $entity "tweet"
      * @param string $id    tweet id
      * @param $id
      * @return mixed
      * @throws \Exception
      */
-    public function deleteTweet($social, $entity, $id) {
+    public function deleteUserTweet($social, $id) {
         $connector = $this->getSocialApi($social);
-        return $connector->deleteTweet($entity, $id);
+        return $connector->deleteUserTweet($id);
     }
 
     /******************************************************************************************************

@@ -495,9 +495,9 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * Service that create a post in Facebook user's feed
      * @param string $id    user id
      * @param array $parameters
-     *      "message"           =>  Text of the post (mandatory)
+     *      "content"           =>  Text of the post (mandatory)
+     *      "attachment" =>  Facebook ID for an existing picture in the person's photo albums to use as the thumbnail image.
      *      "link"              =>  URL
-     *      "object_attachment" =>  Facebook ID for an existing picture in the person's photo albums to use as the thumbnail image.
      *      They must be the owner of the photo, and the photo cannot be part of a message attachment.
      * @return array
      * @throws ConnectorServiceException
@@ -505,8 +505,17 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     public function post($id, array $parameters) {
         $this->checkUser($id);
 
+        $params = array();
+        $params["message"] = $parameters["content"];
+        if (isset($parameters["attachment"])) {
+            $params["object_attachment"] = $parameters["attachment"];
+        }
+        if (isset($parameters["link"])) {
+            $params["link"] = $parameters["link"];
+        }
+
         try {
-            $response = $this->client->post("/" . self::FACEBOOK_SELF_USER . "/feed", $parameters, $this->accessToken);
+            $response = $this->client->post("/" . self::FACEBOOK_SELF_USER . "/feed", $params, $this->accessToken);
         } catch(\Exception $e) {
             throw new ConnectorServiceException('Error creating a post: ' . $e->getMessage(), $e->getCode());
         }
@@ -522,9 +531,9 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * Service that create a post in Facebook user's page feed
      * @param string $id    page id
      * @param array $parameters
-     *      "message"           =>  Text of the post (mandatory)
+     *      "content"           =>  Text of the post (mandatory)
+     *      "attachment" =>  Facebook ID for an existing picture in the person's photo albums to use as the thumbnail image.
      *      "link"              =>  URL
-     *      "object_attachment" =>  Facebook ID for an existing picture in the person's photo albums to use as the thumbnail image.
      *      They must be the owner of the photo, and the photo cannot be part of a message attachment.
      * @return array
      * @throws ConnectorServiceException
@@ -533,8 +542,17 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         $this->checkPage($id);
         $pageinfo = $this->getPage($id);
 
+        $params = array();
+        $params["message"] = $parameters["content"];
+        if (isset($parameters["attachment"])) {
+            $params["object_attachment"] = $parameters["attachment"];
+        }
+        if (isset($parameters["link"])) {
+            $params["link"] = $parameters["link"];
+        }
+
         try {
-            $response = $this->client->post("/" . $id . "/feed", $parameters, $pageinfo["access_token"]);
+            $response = $this->client->post("/" . $id . "/feed", $params, $pageinfo["access_token"]);
         } catch(\Exception $e) {
             throw new ConnectorServiceException('Error creating a post: ' . $e->getMessage(), $e->getCode());
         }

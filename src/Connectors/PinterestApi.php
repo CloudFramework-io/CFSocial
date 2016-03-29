@@ -178,14 +178,13 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that search for an user
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $name
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function searchUsers($entity, $id, $username_or_id, $maxTotalResults = null, $numberOfPages = null,
+    public function searchUsers($id, $username_or_id, $maxTotalResults = null, $numberOfPages = null,
                                 $nextPageUrl = null)
     {
         $this->checkUser($id);
@@ -204,7 +203,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Pinterest Api for pins of the user
-     * @param string $entity "user"
      * @param string $id    user id
      * @param string $query if not null, search this token in the description of the authenticated user's pins
      * @param string $liked if true, search pins liked by the user
@@ -215,7 +213,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPins($entity, $id, $query, $liked, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserPins($id, $query, $liked, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
         $this->client->auth->setOAuthToken($this->accessToken);
@@ -288,14 +286,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pinsList->hasNextPage());
 
-        $pins["pageToken"] = $pageToken;
-
-        return $pins;
+        return array(
+            'pins' => $pins,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that query to Pinterest Api for pins in a board
-     * @param string $entity "board"
      * @param string $username
      * @param string $boardname
      * @param integer $maxResultsPerPage.
@@ -305,7 +303,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportPinsFromBoard($entity, $username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportPinsFromUserBoard($username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkBoard($username, $boardname);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
         $this->client->auth->setOAuthToken($this->accessToken);
@@ -363,14 +361,15 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($pinsList->hasNextPage());
 
-        $pins["pageToken"] = $pageToken;
+        return array(
+            'pins' => $pins,
+            "pageToken" => $pageToken
+        );
 
-        return $pins;
     }
 
     /**
      * Service that query to Pinterest Api for boards of the user
-     * @param string $entity "user"
      * @param string $id    user id
      * @param string $query if not null, search this token in the description of the authenticated user's pins
      * @param integer $maxResultsPerPage.
@@ -380,7 +379,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportBoards($entity, $id, $query = null, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserBoards($id, $query = null, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
         $this->client->auth->setOAuthToken($this->accessToken);
@@ -445,14 +444,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($boardsList->hasNextPage());
 
-        $boards["pageToken"] = $pageToken;
-
-        return $boards;
+        return array(
+            'boards' => $boards,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that query to Pinterest Api for users the user is followed by
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -461,7 +460,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportFollowers($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
         $this->client->auth->setOAuthToken($this->accessToken);
@@ -516,14 +515,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($followersList->hasNextPage());
 
-        $followers["pageToken"] = $pageToken;
-
-        return $followers;
+        return array(
+            'followers' => $followers,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that query to Pinterest Api for users the user follows
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -532,7 +531,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportSubscribers($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
         $this->client->auth->setOAuthToken($this->accessToken);
@@ -587,14 +586,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($subscribersList->hasNextPage());
 
-        $subscribers["pageToken"] = $pageToken;
-
-        return $subscribers;
+        return array(
+            'subscribers' => $subscribers,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that query to Pinterest Api for the boards that the authenticated user follows
-     * @param string $entity "user"
      * @param string $id    user id
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
@@ -603,7 +602,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowingBoards($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserFollowingBoards($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
         $this->client->auth->setOAuthToken($this->accessToken);
@@ -660,14 +659,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($boardsList->hasNextPage());
 
-        $boards["pageToken"] = $pageToken;
-
-        return $boards;
+        return array(
+            'boards' => $boards,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that query to Pinterest Api for the topics that the authenticated user follows
-     * @param string $entity "user"
      * @param string $id    user id
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
@@ -676,7 +675,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowingInterests($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportUserFollowingInterests($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
         $this->client->auth->setOAuthToken($this->accessToken);
@@ -731,21 +730,21 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
             }
         } while ($interestsList->hasNextPage());
 
-        $interests["pageToken"] = $pageToken;
-
-        return $interests;
+        return array(
+            'interests' => $interests,
+            "pageToken" => $pageToken
+        );
     }
 
     /**
      * Service that query to Pinterest Api to get settings of a board
-     * @param $entity   "board"
      * @param $username
      * @param $boardname
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function getBoard($entity, $username, $boardname) {
+    public function getUserBoard($username, $boardname) {
         $this->checkBoard($username, $boardname);
         $this->client->auth->setOAuthToken($this->accessToken);
 
@@ -762,7 +761,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that creates a new board for the user in Pinterest
-     * @param $entity   "user"
      * @param $id       user id
      * @param $name
      * @param $description
@@ -770,7 +768,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function createBoard($entity, $id, $name, $description) {
+    public function createUserBoard($id, $name, $description) {
         $this->checkUser($id);
         $this->client->auth->setOAuthToken($this->accessToken);
 
@@ -791,7 +789,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that edit an existing board in Pinterest
-     * @param $entity   "board"
      * @param $username
      * @param $boardname
      * @param $name
@@ -800,7 +797,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function editBoard($entity, $username, $boardname, $name, $description) {
+    public function editUserBoard($username, $boardname, $name, $description) {
         $this->checkBoard($username, $boardname);
         $this->client->auth->setOAuthToken($this->accessToken);
 
@@ -825,14 +822,13 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that delete an existing board in Pinterest
-     * @param $entity   "board"
      * @param $username
      * @param $boardname
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function deleteBoard($entity, $username, $boardname) {
+    public function deleteUserBoard($username, $boardname) {
         $this->checkBoard($username, $boardname);
         $this->client->auth->setOAuthToken($this->accessToken);
 
@@ -848,13 +844,12 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Pinterest Api to get settings of a pin
-     * @param $entity   "pin"
      * @param $id       pin id
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function getPin($entity, $id) {
+    public function getUserPin($id) {
         $this->checkPin($id);
         $this->client->auth->setOAuthToken($this->accessToken);
 
@@ -870,7 +865,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that creates a new pin in one of the user's boards in Pinterest
-     * @param $entity   "user"
      * @param $id       user id
      * @param $username
      * @param $boardname
@@ -882,7 +876,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function createPin($entity, $id, $username, $boardname, $note, $link, $imageType, $image) {
+    public function createUserPin($id, $username, $boardname, $note, $link, $imageType, $image) {
         $this->checkUser($id);
         $this->client->auth->setOAuthToken($this->accessToken);
 
@@ -908,7 +902,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that edit an existing pin in Pinterest
-     * @param $entity   "pin"
      * @param $id
      * @param $board
      * @param $note
@@ -917,7 +910,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function editPin($entity, $id, $board, $note, $link) {
+    public function editUserPin($id, $board, $note, $link) {
         $this->client->auth->setOAuthToken($this->accessToken);
 
         try {
@@ -943,13 +936,12 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that delete an existing board in Pinterest
-     * @param $entity   "pin"
      * @param $id
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function deletePin($entity, $id) {
+    public function deleteUserPin($id) {
         $this->client->auth->setOAuthToken($this->accessToken);
 
         try {
@@ -963,7 +955,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that modify the relationship between the authenticated user and the target user.
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $userId
      * @param $action
@@ -971,7 +962,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function modifyUserRelationship($entity, $id, $userId, $action) {
+    public function modifyUserRelationship($id, $userId, $action) {
         $this->client->auth->setOAuthToken($this->accessToken);
 
         try {
@@ -990,7 +981,6 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that modify the relationship between the authenticated user and a board.
-     * @param string $entity "user"
      * @param string $id    user id
      * @param $boardId
      * @param $action
@@ -998,7 +988,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function modifyBoardRelationship($entity, $id, $boardId, $action) {
+    public function modifyBoardRelationship($id, $boardId, $action) {
         $this->client->auth->setOAuthToken($this->accessToken);
 
         try {
@@ -1015,7 +1005,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         return array("status"=>"success");
     }
 
-    public function post($entity, $id, array $parameters)
+    public function post($id, array $parameters)
     {
         // TODO: Implement post() method.
     }
