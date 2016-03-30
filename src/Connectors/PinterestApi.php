@@ -92,7 +92,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorServiceException
      * @throws MalformedUrlException
      */
-    public function authorize($code, $verifier, $redirectUrl)
+    public function authorize($code, $verifier = null, $redirectUrl = "")
     {
         if ((null === $code) || ("" === $code)) {
             throw new ConnectorConfigException("'code' parameter is required");
@@ -404,9 +404,10 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
                     break;
                 }
 
-                $boards[$count] = array();
-                foreach($boardsList->all() as $board) {
-                    $boards[$count][] = $board;
+                $boards = array();
+                $boardsArray = $boardsList->toArray();
+                foreach($boardsArray['data'] as $board) {
+                    $boards[] = $board;
                 }
                 $count++;
 
@@ -868,17 +869,24 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function createUserPin($id, $username, $boardname, $note, $link, $imageType, $image) {
+    public function createUserPin($id, $username, $boardname, $note, $link, $imageType = null, $image = null, $imageUrl = null) {
         $this->checkUser($id);
         $this->client->auth->setOAuthToken($this->accessToken);
 
         try {
-            $boardname = strtolower(str_replace(" ","-",urldecode($boardname)));
+            $boardname = strtolower(str_replace(" ", "-", preg_replace('/[^a-zA-Z0-9\ ]/i', '', urldecode($boardname))));
             $parameters = array(
                 "note" => $note,
-                $imageType => $image,
                 "board" => $username."/".$boardname
             );
+
+            if(null !== $image) {
+                $parameters[$imageType] = $image;
+            }
+
+            if(null !== $imageUrl) {
+                $parameters['image_url'] = $imageUrl;
+            }
 
             if (null !== $link) {
                 $parameters["link"] = $link;
@@ -999,7 +1007,11 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
     public function post($id, array $parameters)
     {
-        // TODO: Implement post() method.
+        if(!array_key_exists('username', $parameters)) {
+            throw new ConnectorServiceException('Parameter \'username\' is required to do a pin');
+        }
+        $pin = $this->createUserPin($id, $parameters['username'], $parameters['boardname'], $parameters['message'], $parameters['link'], $parameters['imageType'], $parameters['image'], $parameters['image_url']);
+        return array("post_id" => $pin["id"]);
     }
 
     /**
