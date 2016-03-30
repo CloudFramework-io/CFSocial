@@ -503,6 +503,9 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @throws ConnectorServiceException
      */
     public function post($id, array $parameters) {
+        if(array_key_exists('post_type', $parameters) && $parameters['post_type'] == 'page') {
+            return $this->pagePost($id, $parameters);
+        }
         $this->checkUser($id);
 
         $params = array();
@@ -802,7 +805,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
                 $pagesEdge = $response->getGraphEdge();
 
                 foreach ($pagesEdge as $page) {
-                    $pages[$count][] = $page->asArray();
+                    $pages[] = $page->asArray();
                 }
                 $count++;
 
