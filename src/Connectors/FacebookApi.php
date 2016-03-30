@@ -90,7 +90,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @return array
      * @throws ConnectorServiceException
      */
-    public function authorize($code = null, $verifier = null, $redirectUrl)
+    public function authorize($code, $verifier, $redirectUrl)
     {
         try {
             $helper = $this->client->getRedirectLoginHelper();

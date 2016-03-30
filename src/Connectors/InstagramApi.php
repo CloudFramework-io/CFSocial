@@ -100,7 +100,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorServiceException
      * @throws MalformedUrlException
      */
-    public function authorize($code, $verifier = null, $redirectUrl)
+    public function authorize($code, $verifier, $redirectUrl)
     {
         if ((null === $code) || ("" === $code)) {
             throw new ConnectorConfigException("'code' parameter is required");

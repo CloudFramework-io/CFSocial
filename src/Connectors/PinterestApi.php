@@ -92,18 +92,10 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorServiceException
      * @throws MalformedUrlException
      */
-    public function authorize($code, $verifier = null, $redirectUrl)
+    public function authorize($code, $verifier, $redirectUrl)
     {
         if ((null === $code) || ("" === $code)) {
             throw new ConnectorConfigException("'code' parameter is required");
-        }
-
-        if ((null === $redirectUrl) || (empty($redirectUrl))) {
-            throw new ConnectorConfigException("'redirectUrl' parameter is required");
-        } else {
-            if (!SocialNetworks::wellFormedUrl($redirectUrl)) {
-                throw new MalformedUrlException("'redirectUrl' is malformed");
-            }
         }
 
         $token = $this->client->auth->getOAuthToken($code);

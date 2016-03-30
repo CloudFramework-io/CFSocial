@@ -108,14 +108,6 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorConfigException("'verifier' parameter is required");
         }
 
-        if ((null === $redirectUrl) || (empty($redirectUrl))) {
-            throw new ConnectorConfigException("'redirectUrl' parameter is required");
-        } else {
-            if (!SocialNetworks::wellFormedUrl($redirectUrl)) {
-                throw new MalformedUrlException("'redirectUrl' is malformed");
-            }
-        }
-
         try {
             $parameters = array(
                 "oauth_verifier" => $verifier,

@@ -104,7 +104,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @throws \Exception
      *
      */
-    public function authorize($code, $verifier = null, $redirectUrl)
+    public function authorize($code, $verifier, $redirectUrl)
     {
         if ((null === $code) || ("" === $code)) {
             throw new ConnectorConfigException("'code' parameter is required");

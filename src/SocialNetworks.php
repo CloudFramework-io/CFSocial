@@ -98,7 +98,7 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function confirmAuthorization($social, $code, $verifier = null, $redirectUrl)
+    public function confirmAuthorization($social, $code = null, $verifier = null, $redirectUrl = null)
     {
         $connector = $this->getSocialApi($social);
         return $connector->authorize($code, $verifier, $redirectUrl);
