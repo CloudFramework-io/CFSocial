@@ -747,7 +747,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
                 $total = $circlesList->getTotalItems();
 
                 foreach($circlesList->getItems() as $circle) {
-                    $circles[$count][] = json_decode(json_encode($circle->toSimpleObject()), true);
+                    $circles[] = json_decode(json_encode($circle->toSimpleObject()), true);
                 }
                 $count++;
 
