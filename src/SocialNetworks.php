@@ -166,10 +166,10 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportFollowers($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserFollowers($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $connector = $this->getSocialApi($social);
-        return $connector->exportFollowers($id, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportUserFollowers($id, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
@@ -182,10 +182,10 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function exportSubscribers($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserSubscribers($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $connector = $this->getSocialApi($social);
-        return $connector->exportSubscribers($id, $maxResultsPerPage, $numberOfPages, $pageToken);
+        return $connector->exportUserSubscribers($id, $maxResultsPerPage, $numberOfPages, $pageToken);
     }
 
     /**
@@ -1023,5 +1023,515 @@ class SocialNetworks extends Singleton
         else {
             return 'application/octet-stream';
         }
+    }
+
+    /******************************************************************************************************
+     **                                         DEPRECATED METHODS                                       **
+     ******************************************************************************************************/
+
+    /**
+     * Service that query to a social network api to get followers
+     * @param string $social
+     * @param string $entity "user"|"page"
+     * @param string $id    user or page id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserPeopleInAllCircles
+     * @see SocialNetworks::exportUserFollowers
+     */
+    public function exportFollowers($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that query to a social network api to get subscribers
+     * @param string $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken/$nextPageUrl Indicates a page token / specific page for pagination
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserSubscribers
+     */
+    public function exportSubscribers($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that connect to social network api and request for media files for authenticated user
+     * @param string $social
+     * @param string $entity "user"|"page"
+     * @param string $id    user or page id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserMedia
+     */
+    public function exportMedia($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that connect to social network api and upload a media file (image/video)
+     * @param string $social
+     * @param string $entity "user"|"page
+     * @param string $id    user or page id
+     * @param array $parameters
+     * COMMON TO ALL SOCIAL NETWORKS
+     *      "media_type"    =>      "url"|"path"
+     *      "value"         =>      url or path
+     * FACEBOOK
+     *      "title"         =>      message for the media (mandatory)
+     *      "album_id"      =>      album where media will be saved in
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function importMedia($social, $entity, $id, $parameters)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->importMedia($entity, $id, $parameters);
+    }
+
+    /**
+     * Service that query to a social network api to get posts info
+     * @param string $entity "user"|"page"
+     * @param string $id    user or page id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserPosts
+     */
+    public function exportPosts($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that gets a list of all of the circles for a user
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserCircles
+     */
+    public function exportCircles($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportCircles($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that gets a list of people in a circle
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $circleId
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserPeopleInCircle
+     */
+    public function exportPeopleInCircle($social, $entity, $id, $circleId, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPeopleInCircle($entity, $id, $circleId, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that query to a social network api to get followers info
+     * @param string $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param string $postId
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserPeopleInPost
+     */
+    public function exportPeopleInPost($social, $entity, $id, $postId)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPeopleInPost($entity, $id, $postId);
+    }
+
+    /**
+     * Service that get the list of recent media liked by the owner
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxTotalResults
+     * @param $numberOfPages
+     * @param $nextPageUrl
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserMediaRecentlyLiked
+     */
+    public function exportMediaRecentlyLiked($social, $entity, $id, $maxTotalResults, $numberOfPages, $nextPageUrl) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportMediaRecentlyLiked($entity, $id, $maxTotalResults, $numberOfPages, $nextPageUrl);
+    }
+
+    /**
+     * Service that creates a new photo album for the user in a social network
+     * @param $social
+     * @param string $entity "user"|"page"
+     * @param string $id    user or page id
+     * @param $title
+     * @param $caption
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::createUserPhotosAlbum
+     */
+    public function createPhotosAlbum($social, $entity, $id, $title, $caption) {
+        $connector = $this->getSocialApi($social);
+        return $connector->createPhotosAlbum($entity, $id, $title, $caption);
+    }
+
+    /**
+     * Service that gets photos albums owned by users in a social network
+     * @param $social
+     * @param string $entity "user"|"page"
+     * @param string $id    user or page id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportPhotosUserAlbumsList
+     */
+    public function exportPhotosAlbumsList($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPhotosAlbumsList($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that gets all pages this person administers/is an admin for
+     * @param $social
+     * @param string $entity    "user"
+     * @param string $id        user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @deprecated
+     * @see SocialNetworks::exportUserPages
+     */
+    public function exportPages($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPages($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that export / search the user's boards in a social network
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $query
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserBoards
+     */
+    public function exportBoards($social, $entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportBoards($entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that export / search the user's pins in a social network
+     * @param $social
+     * @param string $entity "user"|"page"
+     * @param string $id    user or page id
+     * @param $query
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserPins
+     */
+    public function exportPins($social, $entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPins($entity, $id, $query, false, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that export / search the pins user has liked in a social network
+     * @param $social
+     * @param string $entity "user"|"page"
+     * @param string $id    user or page id
+     * @param $query
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserPinsLiked
+     */
+    public function exportPinsLiked($social, $entity, $id, $query, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPins($entity, $id, $query, true, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that export pins from a board in a social network
+     * @param $social
+     * @param string $entity    "board"
+     * @param $username
+     * @param $boardname
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportPinsFromUserBoard
+     */
+    public function exportPinsFromBoard($social, $entity, $username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPinsFromBoard($entity, $username, $boardname, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that query to a social network api to get settings of a board
+     * @param string $social
+     * @param string $entity    "board"
+     * @param $username
+     * @param $boardname
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::getUserBoard
+     */
+    public function getBoard($social, $entity, $username, $boardname)    {
+        $connector = $this->getSocialApi($social);
+        return $connector->getBoard($entity, $username, $boardname);
+    }
+    /**
+     * Service that creates a new board for the user in a social network
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $name
+     * @param $description
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::createUserBoard
+     */
+    public function createBoard($social, $entity, $id, $name, $description) {
+        $connector = $this->getSocialApi($social);
+        return $connector->createBoard($entity, $id, $name, $description);
+    }
+    /**
+     * Service that edit an existing board in a social network
+     * @param $social
+     * @param string $entity "board"
+     * @param $username
+     * @param $boardname
+     * @param $name
+     * @param $description
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::editUserBoard
+     */
+    public function editBoard($social, $entity, $username, $boardname, $name, $description) {
+        $connector = $this->getSocialApi($social);
+        return $connector->editBoard($entity, $username, $boardname, $name, $description);
+    }
+    /**
+     * Service that delete an existing board in a social network
+     * @param $social
+     * @param string $entity "board"
+     * @param $username
+     * @param $boardname
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::deleteUserBoard
+     */
+    public function deleteBoard($social, $entity, $username, $boardname) {
+        $connector = $this->getSocialApi($social);
+        return $connector->deleteBoard($entity, $username, $boardname);
+    }
+
+    /**
+     * Service that query to a social network api to get settings of a pin
+     * @param string $social
+     * @param string $entity    "pin"
+     * @param string $id    pin id
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::getUserPin
+     */
+    public function getPin($social, $entity, $id)    {
+        $connector = $this->getSocialApi($social);
+        return $connector->getPin($entity, $id);
+    }
+    /**
+     * Service that creates a new pin for the user in a social network
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $note
+     * @param $link
+     * @param $imageType
+     * @param $image
+     * @param $board
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::createUserPin
+     */
+    public function createPin($social, $entity, $id, $username, $boardname, $note, $link, $imageType, $image) {
+        $connector = $this->getSocialApi($social);
+        return $connector->createPin($entity, $id, $username, $boardname, $note, $link, $imageType, $image);
+    }
+    /**
+     * Service that edit an existing pin in a social network
+     * @param $social
+     * @param string $entity "pin"
+     * @param string $id    pin id
+     * @param string $board
+     * @param $note
+     * @param $link
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::editUserPin
+     */
+    public function editPin($social, $entity, $id, $board, $note, $link) {
+        $connector = $this->getSocialApi($social);
+        return $connector->editPin($entity, $id, $board, $note, $link);
+    }
+    /**
+     * Service that delete an existing pin in a social network
+     * @param $social
+     * @param string $entity "pin"
+     * @param string $id    pin id
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::deleteUserPin
+     */
+    public function deletePin($social, $entity, $id) {
+        $connector = $this->getSocialApi($social);
+        return $connector->deletePin($entity, $id);
+    }
+
+    /**
+     * Service that export the boards that the authenticated user follows in a social network
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserFollowingBoards
+     */
+    public function exportFollowingBoards($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportFollowingBoards($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+    /**
+     * Service that export the topics that the authenticated user follows in a social network
+     * @param $social
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::exportUserFollowingInterests
+     */
+    public function exportFollowingInterests($social, $entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportFollowingInterests($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that gets the home timeline of the user
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::getUserTimeline
+     */
+    public function getTimeline($social, $entity, $id) {
+        $connector = $this->getSocialApi($social);
+        return $connector->getTimeline($entity, $id);
+    }
+
+    /**
+     * Service that gets a single tweet information
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::getUserTweet
+     */
+    public function getTweet($social, $entity, $id) {
+        $connector = $this->getSocialApi($social);
+        return $connector->getTweet($entity, $id);
+    }
+
+    /**
+     * Service that deletes a tweet
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     * @deprecated
+     * @see SocialNetworks::deleteUserTweet
+     */
+    public function deleteTweet($social, $entity, $id) {
+        $connector = $this->getSocialApi($social);
+        return $connector->deleteTweet($entity, $id);
     }
 }

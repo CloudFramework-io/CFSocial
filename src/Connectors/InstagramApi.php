@@ -183,7 +183,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowers($id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
+    public function exportUserFollowers($id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
         $this->checkUser($id);
 
         $this->checkPagination($numberOfPages);
@@ -239,7 +239,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportSubscribers($id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
+    public function exportUserSubscribers($id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
         $this->checkUser($id);
         $this->checkPagination($numberOfPages);
 
@@ -684,5 +684,207 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             throw \Exception("Error calling service: ".curl_error($ch), curl_errno($ch));
         }
         return json_decode($data, true);
+    }
+
+    /******************************* DEPRECATED METHODS ********************************************/
+
+    /**
+     * Service that query to Instagram Api for users the user is followed by
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxResultsPerPage.
+     * @param integer $numberOfPages
+     * @param string $nextPageUrl
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see InstagramApi::exportUserFollowers
+     */
+    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
+        $this->checkUser($id);
+        $this->checkPagination($numberOfPages);
+        if (!$nextPageUrl) {
+            $nextPageUrl = self::INSTAGRAM_API_USERS_URL . $id .
+                "/followed-by?access_token=" . $this->accessToken;
+        }
+        $pagination = true;
+        $followers = array();
+        $count = 0;
+        while ($pagination) {
+            $data = $this->curlGet($nextPageUrl);
+            if ((null === $data["data"]) && ($data["meta"]["code"] !== 200)) {
+                throw new ConnectorServiceException("Error getting followers:".
+                    $data["meta"]["error_message"], $data["meta"]["code"]);
+            }
+            $followers[$count] = array();
+            foreach ($data["data"] as $key => $follower) {
+                $followers[$count][] = $follower;
+            }
+            // If number of pages is zero, then all elements are returned
+            if ((($numberOfPages > 0) && ($count == $numberOfPages)) || (!isset($data->pagination->next_url))) {
+                $pagination = false;
+                if (!isset($data->pagination->next_url)) {
+                    $nextPageUrl = null;
+                }
+            } else {
+                $nextPageUrl = $data->pagination->next_url;
+                $count++;
+            }
+        }
+        $followers["nextPageUrl"] = $nextPageUrl;
+        return $followers;
+    }
+    /**
+     * Service that query to Instagram Api for users the user is following
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxResultsPerPage.
+     * @param integer $numberOfPages
+     * @param string $nextPageUrl
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see InstagramApi::exportUserSubscribers
+     */
+    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $nextPageUrl) {
+        $this->checkUser($id);
+        $this->checkPagination($numberOfPages);
+        if (!$nextPageUrl) {
+            $nextPageUrl = self::INSTAGRAM_API_USERS_URL . $id .
+                "/follows?access_token=" . $this->accessToken;
+        }
+        $pagination = true;
+        $subscribers = array();
+        $count = 0;
+        while ($pagination) {
+            $data = $this->curlGet($nextPageUrl);
+            if ((null === $data["data"]) && ($data["meta"]["code"] !== 200)) {
+                throw new ConnectorServiceException("Error getting subscribers: " .
+                    $data["meta"]["error_message"], $data["meta"]["code"]);
+            }
+            $subscribers[$count] = array();
+            foreach ($data["data"] as $key => $subscriber) {
+                $subscribers[$count][] = $subscriber;
+            }
+            // If number of pages is zero, then all elements are returned
+            if ((($numberOfPages > 0) && ($count == $numberOfPages)) || (!isset($data->pagination->next_url))) {
+                $pagination = false;
+                if (!isset($data->pagination->next_url)) {
+                    $nextPageUrl = null;
+                }
+            } else {
+                $nextPageUrl = $data->pagination->next_url;
+                $count++;
+            }
+        }
+        $subscribers["nextPageUrl"] = $nextPageUrl;
+        return $subscribers;
+    }
+
+    /**
+     * Service that query to Instagram Api service for media files
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxTotalResults.
+     * @param integer $numberOfPages
+     * @param string $nextPageUrl
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see InstagramApi::exportUserMedia
+     */
+    public function exportMedia($entity, $id, $maxTotalResults, $numberOfPages, $nextPageUrl)
+    {
+        $this->checkUser($id);
+        $this->checkPagination($numberOfPages, $maxTotalResults);
+        if (!$nextPageUrl) {
+            $nextPageUrl = self::INSTAGRAM_API_USERS_URL . $id .
+                "/media/recent/?access_token=" . $this->accessToken .
+                "&count=".$maxTotalResults;
+        }
+        $pagination = true;
+        $files = array();
+        $count = 0;
+        while ($pagination) {
+            $data = $this->curlGet($nextPageUrl);
+            if ((null === $data["data"]) && ($data["meta"]["code"] !== 200)) {
+                throw new ConnectorServiceException("Error exporting media: " .
+                    $data["meta"]["error_message"], $data["meta"]["code"]);
+            }
+            $files[$count] = array();
+            foreach ($data["data"] as $key => $media) {
+                if ("image" === $media["type"]) {
+                    $files[$count][] = $media;
+                }
+            }
+            // If number of pages is zero, then all elements are returned
+            if ((($numberOfPages > 0) && ($count == $numberOfPages)) || (!isset($data->pagination->next_url))) {
+                $pagination = false;
+                if (!isset($data->pagination->next_url)) {
+                    $nextPageUrl = null;
+                }
+            } else {
+                $nextPageUrl = $data->pagination->next_url;
+                $count++;
+            }
+        }
+        $files["nextPageUrl"] = $nextPageUrl;
+        return $files;
+    }
+
+    /**
+     * Service that get the list of recent media liked by the owner
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxTotalResults
+     * @param $numberOfPages
+     * @param $nextPageUrl
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see InstagramApi::exportUserMediaRecentlyLiked
+     */
+    public function exportMediaRecentlyLiked($entity, $id, $maxTotalResults, $numberOfPages, $nextPageUrl)
+    {
+        $this->checkUser($id);
+        $this->checkPagination($numberOfPages, $maxTotalResults);
+        $id = self::INSTAGRAM_SELF_USER;
+        if (!$nextPageUrl) {
+            $nextPageUrl = self::INSTAGRAM_API_USERS_URL . $id .
+                "/media/liked/?access_token=" . $this->accessToken .
+                "&count=".$maxTotalResults;
+        }
+        $pagination = true;
+        $files = array();
+        $count = 0;
+        while ($pagination) {
+            $data = $this->curlGet($nextPageUrl);
+            if ((null === $data["data"]) && ($data["meta"]["code"] !== 200)) {
+                throw new ConnectorServiceException("Error exporting media: " .
+                    $data["meta"]["error_message"], $data["meta"]["code"]);
+            }
+            $files[$count] = array();
+            foreach ($data["data"] as $key => $media) {
+                if ("image" === $media["type"]) {
+                    $files[$count][] = $media;
+                }
+            }
+            // If number of pages is zero, then all elements are returned
+            if ((($numberOfPages > 0) && ($count == $numberOfPages)) || (!isset($data->pagination->next_url))) {
+                $pagination = false;
+                if (!isset($data->pagination->next_url)) {
+                    $nextPageUrl = null;
+                }
+            } else {
+                $nextPageUrl = $data->pagination->next_url;
+                $count++;
+            }
+        }
+        $files["nextPageUrl"] = $nextPageUrl;
+        return $files;
     }
 }

@@ -897,4 +897,397 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException("The token has expired, has been tampered with, or the permissions revoked.");
         }
     }
+
+    /******************************* DEPRECATED METHODS ********************************************/
+
+    /**
+     * Service that query to Google Api for people in user circles
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see GoogleApi::exportUserPeopleInAllCircles
+     */
+    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkExpiredToken();
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+        $people = array();
+        $count = 0;
+        do {
+            try {
+                $plusDomainsService = new \Google_Service_PlusDomains($this->client);
+                $parameters = array();
+                $parameters["maxResults"] = $maxResultsPerPage;
+                if ($pageToken) {
+                    $parameters["pageToken"] = $pageToken;
+                }
+                $peopleList = $plusDomainsService->people->listPeople($id, "circled", $parameters);
+                if (!isset($people["total"])) {
+                    $people["total"] = $peopleList->getTotalItems();
+                }
+                $people[$count] = array();
+                foreach($peopleList->getItems() as $person) {
+                    $people[$count][] = $person->toSimpleObject();
+                }
+                $count++;
+                $pageToken = $peopleList->getNextPageToken();
+                // If number of pages is zero, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting people: " . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+        $people["pageToken"] = $pageToken;
+        return $people;
+    }
+
+    /**
+     * Service that query to Google Api for followers info (likes and shares) of a post
+     * @param string $userId
+     * @param string $postId
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see GoogleApi::exportUserPeopleInPost
+     */
+    public function exportPeopleInPost($entity, $id, $postId)
+    {
+        $this->checkExpiredToken();
+        $this->checkUser($id);
+        if ((null === $postId) || ("" === $postId)) {
+            throw new ConnectorConfigException("'postId' parameter is required");
+        }
+        try {
+            $people = array();
+            $plusDomainsService = new \Google_Service_PlusDomains($this->client);
+            $plusoners = $plusDomainsService->people->listByActivity($postId, "plusoners");
+            $resharers = $plusDomainsService->people->listByActivity($postId, "resharers");
+            $sharedto = $plusDomainsService->people->listByActivity($postId, "sharedto");
+            $people["plusoners"] = array("total" => (null === $plusoners->getTotalItems())?0:$plusoners->getTotalItems());
+            $people["resharers"] = array("total" => (null === $resharers->getTotalItems())?0:$resharers->getTotalItems());
+            $people["sharedto"] = array("total" => (null === $sharedto->getTotalItems())?0:$sharedto->getTotalItems());
+            foreach($plusoners->getItems() as $plusoner) {
+                $people["plusoners"][] = $plusoner->toSimpleObject();
+            }
+            foreach($resharers->getItems() as $resharer) {
+                $people["resharers"][] = $resharer->toSimpleObject();
+            }
+            foreach($sharedto->getItems() as $shared) {
+                $people["sharedto"][] = $shared->toSimpleObject();
+            }
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException("Error getting people in Google+ post: " . $e->getMessage(), $e->getCode());
+        }
+        return $people;
+    }
+
+    /**
+     * Service that query to Google Api for posts/activities of a user
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see GoogleApi::exportUserPosts
+     */
+    public function exportPosts($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkExpiredToken();
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+        $activities = array();
+        $count = 0;
+        do {
+            try {
+                $plusDomainsService = new \Google_Service_PlusDomains($this->client);
+                $parameters = array();
+                $parameters["maxResults"] = $maxResultsPerPage;
+                if ($pageToken) {
+                    $parameters["pageToken"] = $pageToken;
+                }
+                $activitiesList = $plusDomainsService->activities->listActivities($id, "user", $parameters);
+                $activities[$count] = array();
+                foreach($activitiesList->getItems() as $activity) {
+                    $activities[$count][] = $activity->toSimpleObject();
+                }
+                $count++;
+                $pageToken = $activitiesList->getNextPageToken();
+                if ($count == $numberOfPages) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting posts: " . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+        $activities["pageToken"] = $pageToken;
+        return $activities;
+    }
+
+    /**
+     * Service that query to Google Api Drive service for images
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see GoogleApi::exportUserMedia
+     */
+    public function exportMedia($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkExpiredToken();
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+        $files = array();
+        $count = 0;
+        do {
+            try {
+                $driveService = new \Google_Service_Drive($this->client);
+                $parameters = array();
+                $parameters["q"] = "((mimeType contains 'image' or mimeType contains 'video') and trashed = false)";
+                $parameters["pageSize"] = $maxResultsPerPage;
+                if ($pageToken) {
+                    $parameters["pageToken"] = $pageToken;
+                }
+                $filesList = $driveService->files->listFiles($parameters);
+                $pageToken = $filesList->getNextPageToken();
+                $items = $filesList->getFiles();
+                if ((count($items) == 0) && (null !== $pageToken)) {
+                    continue;
+                }
+                $files[$count] = $items;
+                $count++;
+                // If number of pages == 0, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting images: " . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+        $files["pageToken"] = $pageToken;
+        return $files;
+    }
+
+    /**
+     * Service that upload a media file (image/video) to Google+
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param string $parameters
+     *      "media_type"    =>      "url"|"path"
+     *      "value"         =>      url or path
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see GoogleApi::uploadUserMedia
+     */
+    public function importMedia($entity, $id, $parameters)
+    {
+        $this->checkExpiredToken();
+        $this->checkUser($id);
+        if ((null === $parameters["media_type"]) || ("" === $parameters["media_type"])) {
+            throw new ConnectorConfigException("Media type must be 'url' or 'path'");
+        } elseif ((null === $parameters["value"]) || ("" === $parameters["value"])) {
+            throw new ConnectorConfigException($parameters["media_type"]." value is required");
+        } elseif ("path" === $parameters["media_type"]) {
+            if (!file_exists($parameters["value"])) {
+                throw new ConnectorConfigException("file doesn't exist");
+            } else {
+                $mimeType = SocialNetworks::mime_content_type($parameters["value"]);
+                if ((false === strpos($mimeType,"image/")) && (false === strpos($mimeType,"video/"))) {
+                    throw new ConnectorConfigException("file must be an image or a video");
+                } else {
+                    $filesize = filesize($parameters["value"]);
+                    if ($filesize > SocialNetworks::MAX_IMPORT_FILE_SIZE) {
+                        throw new ConnectorConfigException("Maximum file size is ".(SocialNetworks::MAX_IMPORT_FILE_SIZE_MB)."MB");
+                    }
+                }
+            }
+        } else {
+            $tempMedia = tempnam("bloombees","media");
+            file_put_contents($tempMedia, file_get_contents($parameters["value"]));
+            $mimeType = SocialNetworks::mime_content_type($parameters["value"]);
+            if ((false === strpos($mimeType,"image/")) && (false === strpos($mimeType,"video/"))) {
+                throw new ConnectorConfigException("file must be an image or a video");
+            } else {
+                $filesize = filesize($tempMedia);
+                if ($filesize > SocialNetworks::MAX_IMPORT_FILE_SIZE) {
+                    throw new ConnectorConfigException("Maximum file size is ".(SocialNetworks::MAX_IMPORT_FILE_SIZE_MB)."MB");
+                }
+            }
+            $parameters["value"] = $tempMedia;
+        }
+        try {
+            $plusDomainsService = new \Google_Service_PlusDomains($this->client);
+            $plusDomainsMedia = new \Google_Service_PlusDomains_Media();
+            $plusDomainsMedia->setDisplayName("Uploaded media file");
+            // Size of each chunk of data in bytes. Setting it higher leads faster upload (less chunks,
+            // for reliable connections). Setting it lower leads better recovery (fine-grained chunks)
+            $chunkSizeBytes = SocialNetworks::BLOCK_SIZE_BYTES;
+            // Setting the defer flag to true tells the client to return a request which can be called
+            // with ->execute(); instead of making the API call immediately.
+            $this->client->setDefer(true);
+            $insertRequest = $plusDomainsService->media->insert($id, "cloud", $plusDomainsMedia);
+            $media = new \Google_Http_MediaFileUpload(
+                $this->client,
+                $insertRequest,
+                $mimeType,
+                null,
+                true,
+                $chunkSizeBytes
+            );
+            $media->setFileSize($filesize);
+            // Upload the various chunks. $status will be false until the process is complete.
+            $status = false;
+            $handle = fopen($parameters["value"], "rb");
+            while (!$status && !feof($handle)) {
+                $chunk = stream_get_contents($handle, $chunkSizeBytes);
+                $status = $media->nextChunk($chunk);
+            }
+            // The final value of $status will be the data from the API for the object that has been uploaded.
+            $result = false;
+            if($status != false) {
+                $result = $status;
+            }
+            fclose($handle);
+            // Reset to the client to execute requests immediately in the future.
+            $this->client->setDefer(false);
+            return $result;
+        } catch (Exception $e) {
+            throw new ConnectorServiceException("Error importing '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
+        }
+    }
+
+    /**
+     * Service that query to Google Api for a list of circles for an user
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see GoogleApi::exportUserCircles
+     */
+    public function exportCircles($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkExpiredToken();
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+        $circles = array();
+        $count = 0;
+        do {
+            try {
+                $plusDomainsService = new \Google_Service_PlusDomains($this->client);
+                $parameters = array();
+                $parameters["maxResults"] = $maxResultsPerPage;
+                if ($pageToken) {
+                    $parameters["pageToken"] = $pageToken;
+                }
+                $circlesList = $plusDomainsService->circles->listCircles($id, $parameters);
+                $total = $circlesList->getTotalItems();
+                foreach($circlesList->getItems() as $circle) {
+                    $circles[] = json_decode(json_encode($circle->toSimpleObject()), true);
+                }
+                $count++;
+                $pageToken = $circlesList->getNextPageToken();
+                // If number of pages is zero, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (\Exception $e) {
+                throw new ConnectorServiceException("Error exporting circles: " . $e->getMessage(), $e->getCode());
+            }
+        } while ($pageToken);
+        return array(
+            'circles' => $circles,
+            "totalCount" => $total,
+            "pageToken" => $pageToken,
+        );
+    }
+
+    /**
+     * Service that query to Google Api for people in an specific circle
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param string $circleId
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see GoogleApi::exportUserPeopleInCircle
+     */
+    public function exportPeopleInCircle($entity, $id, $circleId, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkExpiredToken();
+        $this->checkUser($id);
+        if ((null === $circleId) || ("" === $circleId)) {
+            throw new ConnectorConfigException("'circleId' parameter is required");
+        }
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+        $people = array();
+        $count = 0;
+        do {
+            try {
+                $plusDomainsService = new \Google_Service_PlusDomains($this->client);
+                $parameters = array();
+                $parameters["maxResults"] = $maxResultsPerPage;
+                if ($pageToken) {
+                    $parameters["pageToken"] = $pageToken;
+                }
+                $peopleList = $plusDomainsService->people->listByCircle($circleId, $parameters);
+                if (!isset($people["total"])) {
+                    $people["total"] = $peopleList->getTotalItems();
+                }
+                $people[$count] = array();
+                foreach($peopleList->getItems() as $person) {
+                    $people[$count][] = $person->toSimpleObject();
+                }
+                $count++;
+                $pageToken = $peopleList->getNextPageToken();
+                // If number of pages is zero, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting people in circle with id '".$circleId."' :" . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+        $people["pageToken"] = $pageToken;
+        return $people;
+    }
 }

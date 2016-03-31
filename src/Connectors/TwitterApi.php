@@ -248,7 +248,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportFollowers($id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserFollowers($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
@@ -305,7 +305,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function exportSubscribers($id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    public function exportUserSubscribers($id, $maxResultsPerPage, $numberOfPages, $pageToken)
     {
         $this->checkUser($id);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
@@ -493,6 +493,223 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorConfigException("'numberOfPages' parameter is required");
         } else if (!is_numeric($numberOfPages)) {
             throw new ConnectorConfigException("'numberOfPages' parameter is not numeric");
+        }
+    }
+
+    /******************************* DEPRECATED METHODS ********************************************/
+
+    /**
+     * Service that query to Twitter Api to get user home timeline
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @return array
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see TwitterApi::getUserTimeline
+     */
+    public function getTimeline($entity, $id)
+    {
+        $response = $this->client->get("statuses/home_timeline");
+        if (200 === $this->client->getLastHttpCode()) {
+            return json_decode(json_encode($response),true);
+        } else {
+            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+        }
+    }
+    /**
+     * Service that query to Twitter Api to get single tweet information
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @return array
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see TwitterApi::getUserTweet
+     */
+    public function getTweet($entity, $id)
+    {
+        $response = $this->client->get("statuses/show/".$id);
+        if (200 === $this->client->getLastHttpCode()) {
+            return json_decode(json_encode($response),true);
+        } else {
+            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+        }
+    }
+    /**
+     * Service that query to Twitter Api to delete a tweet
+     * @param string $entity "tweet"
+     * @param string $id    tweet id
+     * @return array
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see TwitterApi::deleteUserTweet
+     */
+    public function deleteTweet($entity, $id)
+    {
+        $response = $this->client->post("statuses/destroy/".$id);
+        if (200 === $this->client->getLastHttpCode()) {
+            return json_decode(json_encode($response),true);
+        } else {
+            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+        }
+    }
+    /**
+     * Service that query to Twitter Api for users the user is followed by
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see TwitterApi::exportUserFollowers
+     */
+    public function exportFollowers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+        $followers = array();
+        $count = 0;
+        do {
+            $parameters = array();
+            $parameters["user_id"] = $id;
+            $parameters["count"] = $maxResultsPerPage;
+            $parameters["cursor"] = $pageToken;
+            $followersList = json_decode(json_encode($this->client->get("followers/list", $parameters)),true);
+            if (200 !== $this->client->getLastHttpCode()) {
+                $pageToken = null;
+                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+            }
+            $followers[$count] = array();
+            foreach($followersList["users"] as $follower) {
+                $followers[$count][] = $follower;
+            }
+            $count++;
+            $pageToken = $followersList["next_cursor"];
+            // 0 Indicates last page
+            if ($pageToken == 0) {
+                $pageToken = null;
+            }
+            // If number of pages is zero, then all elements are returned
+            if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                break;
+            }
+        } while ($pageToken);
+        $followers["pageToken"] = $pageToken;
+        return $followers;
+    }
+    /**
+     * Service that query to Twitter Api for users the user is following (friends)
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see TwitterApi::exportUserSubscribers
+     */
+    public function exportSubscribers($entity, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+        $friends = array();
+        $count = 0;
+        do {
+            $parameters = array();
+            $parameters["user_id"] = $id;
+            $parameters["count"] = $maxResultsPerPage;
+            $parameters["cursor"] = $pageToken;
+            $friendsList = json_decode(json_encode($this->client->get("friends/list", $parameters)),true);
+            if (200 !== $this->client->getLastHttpCode()) {
+                $pageToken = null;
+                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
+            }
+            $friends[$count] = array();
+            foreach($friendsList["users"] as $friend) {
+                $friends[$count][] = $friend;
+            }
+            $count++;
+            $pageToken = $friendsList["next_cursor"];
+            // 0 Indicates last page
+            if ($pageToken == 0) {
+                $pageToken = null;
+            }
+            // If number of pages is zero, then all elements are returned
+            if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                break;
+            }
+        } while ($pageToken);
+        $friends["pageToken"] = $pageToken;
+        return $friends;
+    }
+
+    /**
+     * Service that upload a media file (image/video) to Google+
+     * @param string $entity "user"
+     * @param string $id    user id
+     * @param string $parameters
+     *      "media_type"    =>      "url"|"path"
+     *      "value"         =>      url or path
+     * @return array
+     * @throws AuthenticationException
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     * @deprecated
+     * @see TwitterApi::uploadUserMedia
+     */
+    public function importMedia($entity, $id, $parameters)
+    {
+        if ((null === $parameters["media_type"]) || ("" === $parameters["media_type"])) {
+            throw new ConnectorConfigException("Media type must be 'url' or 'path'");
+        } elseif ((null === $parameters["value"]) || ("" === $parameters["value"])) {
+            throw new ConnectorConfigException($parameters["media_type"]." value is required");
+        } elseif ("path" === $parameters["media_type"]) {
+            if (!file_exists($parameters["value"])) {
+                throw new ConnectorConfigException("file doesn't exist");
+            } else {
+                $mimeType = SocialNetworks::mime_content_type($parameters["value"]);
+                if ((false === strpos($mimeType,"image/")) && (false === strpos($mimeType,"video/"))) {
+                    throw new ConnectorConfigException("file must be an image or a video");
+                } else {
+                    $filesize = filesize($parameters["value"]);
+                    if ((false !== strpos($mimeType,"image/")) && ($filesize > self::MAX_IMPORT_IMAGE_FILE_SIZE)) {
+                        throw new ConnectorConfigException("Maximum image file size is ".(self::MAX_IMPORT_IMAGE_FILE_SIZE_MB)."MB");
+                    } else if ((false !== strpos($mimeType,"video/")) && ($filesize > self::MAX_IMPORT_VIDEO_FILE_SIZE)) {
+                        throw new ConnectorConfigException("Maximum video file size is ".(self::MAX_IMPORT_VIDEO_FILE_SIZE_MB)."MB");
+                    }
+                }
+            }
+        } else {
+            $tempMedia = tempnam("bloombees","media");
+            file_put_contents($tempMedia, file_get_contents($parameters["value"]));
+            $mimeType = SocialNetworks::mime_content_type($parameters["value"]);
+            if ((false === strpos($mimeType,"image/")) && (false === strpos($mimeType,"video/"))) {
+                throw new ConnectorConfigException("file must be an image or a video");
+            } else {
+                $filesize = filesize($tempMedia);
+                if ((false !== strpos($mimeType,"image/")) && ($filesize > self::MAX_IMPORT_IMAGE_FILE_SIZE)) {
+                    throw new ConnectorConfigException("Maximum image file size is ".(self::MAX_IMPORT_IMAGE_FILE_SIZE_MB)."MB");
+                } else if ((false !== strpos($mimeType,"video/")) && ($filesize > self::MAX_IMPORT_VIDEO_FILE_SIZE)) {
+                    throw new ConnectorConfigException("Maximum video file size is ".(self::MAX_IMPORT_VIDEO_FILE_SIZE_MB)."MB");
+                }
+            }
+            $parameters["value"] = $tempMedia;
+        }
+        $response = $this->client->upload('media/upload', ['media' => $parameters["value"]]);
+        if (200 === $this->client->getLastHttpCode()) {
+            return json_decode(json_encode($response),true);
+        } else {
+            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
 }
