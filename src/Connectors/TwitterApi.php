@@ -43,7 +43,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorConfigException("'clientSecret' parameter is required");
         }
 
-        if ((null === $clientScope) || (!is_array($clientScope)) /*|| (count($clientScope) == 0)*/) {
+        if ((null === $clientScope) || (!is_array($clientScope))) {
             throw new ConnectorConfigException("'clientScope' parameter is required");
         }
 
@@ -52,10 +52,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $this->clientScope = $clientScope;
 
         $this->client = new TwitterOAuth($this->clientId, $this->clientSecret);
+        $this->client->setGzipEncoding(false);
     }
 
     /**
-     * Compose Twitter Api credentials array from session data
+     * Service that request authorization to Twitter making up the Twitter login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -89,6 +90,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
+     * Authentication service from Twitter sign in request
      * @param string $code
      * @param string $verifier
      * @param string $redirectUrl

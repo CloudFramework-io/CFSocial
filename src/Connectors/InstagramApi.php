@@ -57,7 +57,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Compose Instagram Api credentials array from session data
+     * Service that request authorization to Instagram making up the Instagram login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -91,6 +91,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
+     * Authentication service from Instagram sign in request
      * @param string $code
      * @param string $verifier
      * @param string $redirectUrl

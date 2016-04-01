@@ -60,7 +60,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Compose Pinterest Api credentials array from session data
+     * Service that request authorization to Pinterest making up the Pinterest login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -83,6 +83,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
+     * Authentication service from Pinterest sign in request
      * @param string $code
      * @param string $verifier
      * @param string $redirectUrl
