@@ -441,7 +441,8 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $response = $this->client->post('statuses/update', $params);
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            $post =  json_decode(json_encode($response),true);
+            return array("post_id" => $post['id']);
         } else {
             $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
