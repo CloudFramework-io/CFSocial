@@ -115,6 +115,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             $parameters = array(
                 "oauth_verifier" => $verifier,
                 "oauth_token" => $code,
+                "include_email" => "true"
             );
 
             $response = $this->client->oauth("oauth/access_token", $parameters);
@@ -163,7 +164,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      */
     public function getProfile($id = null)
     {
-        $response = $this->client->get("account/verify_credentials", array("include_email" => 1));
+        $response = $this->client->get("account/verify_credentials", array("include_email" => "true"));
 
         if (200 === $this->client->getLastHttpCode()) {
 
