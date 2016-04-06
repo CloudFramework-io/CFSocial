@@ -16,7 +16,7 @@ use CloudFramework\Service\SocialNetworks\SocialNetworks;
  */
 class InstagramApi extends Singleton implements SocialNetworkInterface {
 
-    const ID = 'instagram';
+    const ID = "instagram";
     const INSTAGRAM_OAUTH_URL = "https://api.instagram.com/oauth/authorize/";
     const INSTAGRAM_OAUTH_ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token";
     const INSTAGRAM_API_USERS_URL = "https://api.instagram.com/v1/users/";
@@ -446,7 +446,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
      * @param string $id    user id
      * @param array $parameters
      *      "content" => Text of the comment
-     *      "media_id" => Instagram media's ID
+     *      "attachment" => Instagram media's ID
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -657,11 +657,13 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $data = curl_exec($ch);
-        curl_close($ch);
 
         if (!$data) {
-            throw \Exception("Error calling service: ".curl_error($ch), curl_errno($ch));
+            throw new \Exception("Error calling service: ".curl_error($ch), curl_errno($ch));
         }
+
+        curl_close($ch);
+
         return json_decode($data, true);
     }
 
@@ -679,11 +681,13 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $data = curl_exec($ch);
-        curl_close($ch);
 
         if (!$data) {
-            throw \Exception("Error calling service: ".curl_error($ch), curl_errno($ch));
+            throw new \Exception("Error calling service: ".curl_error($ch), curl_errno($ch));
         }
+
+        curl_close($ch);
+
         return json_decode($data, true);
     }
 

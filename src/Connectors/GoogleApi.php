@@ -16,7 +16,7 @@ use CloudFramework\Service\SocialNetworks\SocialNetworks;
  */
 class GoogleApi extends Singleton implements SocialNetworkInterface {
 
-    const ID = 'google';
+    const ID = "google";
 
     // Google client object
     private $client;

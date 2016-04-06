@@ -12,7 +12,7 @@ use CloudFramework\Service\SocialNetworks\SocialNetworks;
 
 class TwitterApi extends Singleton implements SocialNetworkInterface {
 
-    const ID = 'twitter';
+    const ID = "twitter";
     const MAX_IMPORT_IMAGE_FILE_SIZE = 5242880; // 5MB
     const MAX_IMPORT_IMAGE_FILE_SIZE_MB = 5;
     const MAX_IMPORT_VIDEO_FILE_SIZE = 15728640; // 15MB
@@ -172,7 +172,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
                 "name" => $data["name"],
                 "first_name" => null,
                 "last_name" => null,
-                "email" => null,
+                "email" => $data["email"],
                 "photo" => $data["profile_image_url"],
                 "locale" => $data["lang"],
                 "url" => $data["url"],

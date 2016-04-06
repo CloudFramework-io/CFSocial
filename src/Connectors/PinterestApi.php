@@ -18,7 +18,7 @@ use DirkGroenen\Pinterest\Pinterest;
  */
 class PinterestApi extends Singleton implements SocialNetworkInterface {
 
-    const ID = 'pinterest';
+    const ID = "pinterest";
     const PINTEREST_SELF_USER = "me";
 
     // Pinterest client object
@@ -862,31 +862,27 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $id       user id
      * @param $username
      * @param $boardname
-     * @param $note
+     * @param $content
      * @param $link
-     * @param $imageType
-     * @param $image
+     * @param $attachmentType
+     * @param $attachment
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function createUserPin($id, $username, $boardname, $note, $link, $imageType = null, $image = null, $imageUrl = null) {
+    public function createUserPin($id, $username, $boardname, $content, $link = null, $attachmentType = null, $attachment = null) {
         $this->checkUser($id);
         $this->client->auth->setOAuthToken($this->accessToken);
 
         try {
             $boardname = strtolower(str_replace(" ", "-", preg_replace('/[^a-zA-Z0-9\ ]/i', '', urldecode($boardname))));
             $parameters = array(
-                "note" => $note,
+                "note" => $content,
                 "board" => $username."/".$boardname
             );
 
-            if(null !== $image) {
-                $parameters[$imageType] = $image;
-            }
-
-            if(null !== $imageUrl) {
-                $parameters['image_url'] = $imageUrl;
+            if(null !== $attachment) {
+                $parameters[$attachmentType] = $attachment;
             }
 
             if (null !== $link) {
@@ -1011,7 +1007,8 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         if(!array_key_exists('username', $parameters)) {
             throw new ConnectorServiceException('Parameter \'username\' is required to do a pin');
         }
-        $pin = $this->createUserPin($id, $parameters['username'], $parameters['boardname'], $parameters['message'], $parameters['link'], $parameters['imageType'], $parameters['image'], $parameters['image_url']);
+        $pin = $this->createUserPin($id, $parameters['username'], $parameters['boardname'], $parameters['content'], $parameters['link'],
+            $parameters['attachment_type'], $parameters['attachment']);
         return array("post_id" => $pin["id"]);
     }
 

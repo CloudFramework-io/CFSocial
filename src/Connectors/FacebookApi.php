@@ -11,7 +11,7 @@ use Facebook\Facebook;
 
 class FacebookApi extends Singleton implements SocialNetworkInterface
 {
-    const ID = 'facebook';
+    const ID = "facebook";
     const FACEBOOK_SELF_USER = "me";
 
     // Google client object
@@ -714,6 +714,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
     /**
      * Service that gets photos from an album owned by user or in a page in facebook
+     * @param string $id    user id
      * @param $albumId
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -721,7 +722,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @return array
      * @throws \Exception
      */
-    public function exportPhotosFromAlbum($albumId, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportPhotosFromAlbum($id, $albumId, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkAlbum($albumId);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
