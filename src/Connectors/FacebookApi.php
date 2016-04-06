@@ -14,7 +14,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     const ID = "facebook";
     const FACEBOOK_SELF_USER = "me";
 
-    // Google client object
+    // Facebook client object
     private $client;
 
     // API keys
