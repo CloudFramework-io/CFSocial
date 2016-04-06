@@ -53,6 +53,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
         $this->client = new TwitterOAuth($this->clientId, $this->clientSecret);
         $this->client->setGzipEncoding(false);
+        $this->client->setDecodeJsonAsArray(true);
     }
 
     /**
@@ -114,6 +115,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             $parameters = array(
                 "oauth_verifier" => $verifier,
                 "oauth_token" => $code,
+                "include_email" => "true"
             );
 
             $response = $this->client->oauth("oauth/access_token", $parameters);
@@ -162,15 +164,14 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      */
     public function getProfile($id = null)
     {
-        $response = $this->client->get("account/verify_credentials", array("include_email", "true"));
+        $response = $this->client->get("account/verify_credentials", array("include_email" => "true"));
 
         if (200 === $this->client->getLastHttpCode()) {
-            $data = json_decode(json_encode($response),true);
 
             $profile = array(
-                "user_id" => $data["id"],
-                "name" => $data["name"],
-                "first_name" => null,
+                "user_id" => $response["id"],
+                "name" => $response["screen_name"],
+                "first_name" => $response["name"],
                 "last_name" => null,
                 "email" => $data["email"],
                 "photo" => $data["profile_image_url"],
@@ -181,7 +182,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
             return $profile;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody= $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -197,9 +198,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $response = $this->client->get("statuses/home_timeline");
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody= $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -215,9 +216,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $response = $this->client->get("statuses/show/".$id);
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -233,9 +234,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $response = $this->client->post("statuses/destroy/".$id);
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody= $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -264,11 +265,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             $parameters["count"] = $maxResultsPerPage;
             $parameters["cursor"] = $pageToken;
 
-            $followersList = json_decode(json_encode($this->client->get("followers/list", $parameters)),true);
+            $followersList = $this->client->get("followers/list", $parameters);
 
             if (200 !== $this->client->getLastHttpCode()) {
                 $pageToken = null;
-                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                $lastBody = $this->client->getLastBody();
                 throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
             }
 
@@ -321,11 +322,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             $parameters["count"] = $maxResultsPerPage;
             $parameters["cursor"] = $pageToken;
 
-            $friendsList = json_decode(json_encode($this->client->get("friends/list", $parameters)),true);
+            $friendsList = $this->client->get("friends/list", $parameters);
 
             if (200 !== $this->client->getLastHttpCode()) {
                 $pageToken = null;
-                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                $lastBody= $this->client->getLastBody();
                 throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
             }
 
@@ -410,9 +411,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $response = $this->client->upload('media/upload', ['media' => $parameters["value"]]);
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -441,9 +442,10 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         $response = $this->client->post('statuses/update', $params);
 
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            $post =  $response;
+            return array("post_id" => $post['id']);
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -513,9 +515,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     {
         $response = $this->client->get("statuses/home_timeline");
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -532,9 +534,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     {
         $response = $this->client->get("statuses/show/".$id);
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -551,9 +553,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     {
         $response = $this->client->post("statuses/destroy/".$id);
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }
@@ -581,10 +583,10 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             $parameters["user_id"] = $id;
             $parameters["count"] = $maxResultsPerPage;
             $parameters["cursor"] = $pageToken;
-            $followersList = json_decode(json_encode($this->client->get("followers/list", $parameters)),true);
+            $followersList = $this->client->get("followers/list", $parameters);
             if (200 !== $this->client->getLastHttpCode()) {
                 $pageToken = null;
-                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                $lastBody = $this->client->getLastBody();
                 throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
             }
             $followers[$count] = array();
@@ -629,10 +631,10 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
             $parameters["user_id"] = $id;
             $parameters["count"] = $maxResultsPerPage;
             $parameters["cursor"] = $pageToken;
-            $friendsList = json_decode(json_encode($this->client->get("friends/list", $parameters)),true);
+            $friendsList = $this->client->get("friends/list", $parameters);
             if (200 !== $this->client->getLastHttpCode()) {
                 $pageToken = null;
-                $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+                $lastBody = $this->client->getLastBody();
                 throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
             }
             $friends[$count] = array();
@@ -708,9 +710,9 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
         }
         $response = $this->client->upload('media/upload', ['media' => $parameters["value"]]);
         if (200 === $this->client->getLastHttpCode()) {
-            return json_decode(json_encode($response),true);
+            return $response;
         } else {
-            $lastBody= json_decode(json_encode($this->client->getLastBody()),true);
+            $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
         }
     }

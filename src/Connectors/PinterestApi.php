@@ -154,14 +154,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
 
         $profile = array(
             "user_id" => $data["id"],
-            "name" => $data["first_name"] . " " . $data["last_name"],
+            "name" => $data['username'],
             "first_name" => $data["first_name"],
             "last_name" => $data["last_name"],
-            "email" => null,
+            "email" => $data['email'],
             "photo" => ((array_key_exists("image", $data)) &&
                             (count($data["image"]) > 0))?$data["image"][key($data["image"])]["url"]:null,
             "locale" => null,
-            "url" => null,
+            "url" => "https://pinterest.com/" . $data['username'],
             "raw" => $data
         );
 
