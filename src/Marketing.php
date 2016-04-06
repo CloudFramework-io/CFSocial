@@ -17,7 +17,7 @@ class Marketing extends Singleton
      */
     public function getSocialApi($social) {
         $social = ucfirst($social);
-        $socialNetworkClass = "CloudFramework\\Service\\SocialNetworks\\Marketing\\{$social}Api";
+        $socialNetworkClass = "CloudFramework\\Service\\SocialNetworks\\Connectors\\Marketing\\{$social}Api";
         if (class_exists($socialNetworkClass)) {
             try {
                 return $api = $socialNetworkClass::getInstance();

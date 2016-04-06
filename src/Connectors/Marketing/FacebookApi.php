@@ -1,5 +1,5 @@
 <?php
-namespace CloudFramework\Service\SocialNetworks\Marketing;
+namespace CloudFramework\Service\SocialNetworks\Connectors\Marketing;
 
 use FacebookAds\Api;
 use FacebookAds\Object\AdUser;
