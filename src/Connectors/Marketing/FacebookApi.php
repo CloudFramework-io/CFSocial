@@ -1,15 +1,16 @@
 <?php
 namespace CloudFramework\Service\SocialNetworks\Connectors\Marketing;
 
+use CloudFramework\Patterns\Singleton;
+use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
+use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
+
 use FacebookAds\Api;
 use FacebookAds\Object\AdUser;
 
 class FacebookApi extends Singleton {
     const ID = "facebook";
     const FACEBOOK_SELF_USER = "me";
-
-    // Facebook ads api object
-    private $api;
 
     // API keys
     private $clientId;
@@ -33,15 +34,17 @@ class FacebookApi extends Singleton {
             throw new ConnectorConfigException("'clientSecret' parameter is required", 602);
         }
 
-        if ((null === $accessToken) || ("" === $accessToken)) {
-            throw new ConnectorConfigException("'accessToken' parameter is required", 602);
-        }
-
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
-        $this->accessToken = $accessToken;
+    }
 
-        $this->api = Api::init($clientId, $clientSecret, $accessToken);
+    /**
+     * Method that inject the access token in connector
+     * @param array $credentials
+     */
+    public function setAccessToken(array $credentials) {
+        $this->accessToken = $credentials["access_token"];
+
     }
 
     /**
@@ -49,8 +52,14 @@ class FacebookApi extends Singleton {
      * @return array
      */
     public function getCurrentAdAccount() {
-        $me = new AdUser(FACEBOOK_SELF_USER);
-        $currentAdAccount = $me->getAdAccounts()->current();
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $me = new AdUser(FACEBOOK_SELF_USER);
+            $currentAdAccount = $me->getAdAccounts()->current();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
 
         return $currentAdAccount->getData();
     }
