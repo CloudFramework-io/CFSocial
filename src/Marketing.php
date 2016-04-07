@@ -42,4 +42,15 @@ class Marketing extends Singleton
         $api = $this->getSocialApi($social);
         return $api->setApiKeys($clientId, $clientSecret, $accessToken);
     }
+
+    /**
+     * Service that get the user's current ad account data
+     * @param $social
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getCurrentAdAccount($social) {
+        $api = $this->getSocialApi($social);
+        return $api->getCurrentAdAccount();
+    }
 }
