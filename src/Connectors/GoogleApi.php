@@ -1290,4 +1290,16 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
         $people["pageToken"] = $pageToken;
         return $people;
     }
+
+    /**
+     * Method to allow force the authorization screen in order to get the refresh token
+     * @param bool $force
+     */
+    public function forceAuth($force = false) {
+        if($force) {
+            $this->client->setApprovalPrompt('force');
+        } else {
+            $this->client->setApprovalPrompt('auto');
+        }
+    }
 }
