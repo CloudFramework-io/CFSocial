@@ -164,7 +164,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      */
     public function getProfile($id = null)
     {
-        $response = $this->client->get("account/verify_credentials", array("include_email" => "true"));
+        $response = $this->client->get("account/verify_credentials", array("include_email" => true));
 
         if (200 === $this->client->getLastHttpCode()) {
 
@@ -173,11 +173,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
                 "name" => $response["screen_name"],
                 "first_name" => $response["name"],
                 "last_name" => null,
-                "email" => $data["email"],
-                "photo" => $data["profile_image_url"],
-                "locale" => $data["lang"],
-                "url" => $data["url"],
-                "raw" => $data
+                "email" => $response["email"],
+                "photo" => $response["profile_image_url"],
+                "locale" => $response["lang"],
+                "url" => "https://twitter.com/" . $response["screen_name"],
+                "raw" => $response
             );
 
             return $profile;
