@@ -121,7 +121,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
         $this->client->setRedirectUri($redirectUrl);
 
         try {
-            $googleCredentials = $this->client->authenticate($code);
+            $googleCredentials = json_decode($this->client->authenticate($code), true);
         } catch(\Exception $e) {
             if (401 === $e->getCode()) {
                 throw new AuthenticationException("Error fetching OAuth2 access token, client is invalid");
