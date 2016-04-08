@@ -930,6 +930,22 @@ class SocialNetworks extends Singleton
     }
 
     /******************************************************************************************************
+     **                                         TUMBLR END POINTS                                      **
+     ******************************************************************************************************/
+
+    /**
+     * Service that gets the authenticated user's photo posts
+     * @param $social
+     * @param $blogName
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserPhotoPosts($social, $blogName) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportUserPhotoPosts($blogName);
+    }
+
+    /******************************************************************************************************
      **                                         GENERAL UTILITIES                                        **
      ******************************************************************************************************/
 
