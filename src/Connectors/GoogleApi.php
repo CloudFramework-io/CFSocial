@@ -121,7 +121,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
         $this->client->setRedirectUri($redirectUrl);
 
         try {
-            $googleCredentials = $this->client->authenticate($code);
+            $googleCredentials = json_decode($this->client->authenticate($code), true);
         } catch(\Exception $e) {
             if (401 === $e->getCode()) {
                 throw new AuthenticationException("Error fetching OAuth2 access token, client is invalid");
@@ -1289,5 +1289,17 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
         } while ($pageToken);
         $people["pageToken"] = $pageToken;
         return $people;
+    }
+
+    /**
+     * Method to allow force the authorization screen in order to get the refresh token
+     * @param bool $force
+     */
+    public function forceAuth($force = false) {
+        if($force) {
+            $this->client->setApprovalPrompt('force');
+        } else {
+            $this->client->setApprovalPrompt('auto');
+        }
     }
 }

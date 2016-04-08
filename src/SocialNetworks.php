@@ -79,12 +79,16 @@ class SocialNetworks extends Singleton
      * Service to request authorization to the social network
      * @param string $social
      * @param string $redirectUrl
+     * @param boolean $force
      * @return mixed
      * @throws \Exception
      */
-    public function requestAuthorization($social, $redirectUrl)
+    public function requestAuthorization($social, $redirectUrl, $force = false)
     {
         $connector = $this->getSocialApi($social);
+        if($force && method_exists($connector, 'forceAuth')) {
+            $connector->forceAuth(true);
+        }
         return $connector->requestAuthorization($redirectUrl);
     }
 

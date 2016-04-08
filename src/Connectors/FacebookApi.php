@@ -8,6 +8,7 @@ use CloudFramework\Service\SocialNetworks\Exceptions\MalformedUrlException;
 use CloudFramework\Service\SocialNetworks\Interfaces\SocialNetworkInterface;
 use CloudFramework\Service\SocialNetworks\SocialNetworks;
 use Facebook\Facebook;
+use Facebook\Helpers\FacebookRedirectLoginHelper;
 
 class FacebookApi extends Singleton implements SocialNetworkInterface
 {
@@ -90,11 +91,18 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @return array
      * @throws ConnectorServiceException
      */
-    public function authorize($code, $verifier, $redirectUrl)
+    public function authorize($code, $verifier, $redirectUrl = null)
     {
         try {
+            if(!array_key_exists('code', $_GET)) {
+                $_GET['code'] = $code;
+            }
+            if(!array_key_exists('state', $_GET)) {
+                $_GET['state'] = $verifier;
+            }
+            /** @var FacebookRedirectLoginHelper $helper */
             $helper = $this->client->getRedirectLoginHelper();
-            $accessToken = $helper->getAccessToken();
+            $accessToken = $helper->getAccessToken($redirectUrl);
 
             if (empty($accessToken)) {
                 throw new ConnectorServiceException("Error taking access token from Facebook Api", 500);
