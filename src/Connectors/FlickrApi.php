@@ -191,21 +191,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
-        $userArray = json_decode(json_encode($response), true);
-
-        $profile = [
-            "user_id" => null,
-            "name" => $userArray["user"]["name"],
-            "first_name" => null,
-            "last_name" => null,
-            "email" => null,
-            "photo" => null,
-            "locale" => null,
-            "url" => $userArray["user"]["blogs"][0]["url"],
-            "raw" => $userArray
-        ];
-
-        return $profile;
+        return json_decode(json_encode($response), true);
     }
 
     /**
