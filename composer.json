@@ -27,7 +27,8 @@
         "google/apiclient": "^2.0.0@RC",
         "dirkgroenen/Pinterest-API-PHP": "^0.2.10",
         "bocharsky-bw/vkontakte-php-sdk": "dev-master",
-        "tumblr/tumblr": "dev-master"
+        "tumblr/tumblr": "dev-master",
+        "dopiaza/dpzflickr": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.8",
