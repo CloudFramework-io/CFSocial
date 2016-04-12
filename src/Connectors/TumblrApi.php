@@ -303,7 +303,9 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
-        return json_decode(json_encode($response), true);
+        $data = json_decode(json_encode($response), true);
+
+        return array("posts" => $data["posts"]);
     }
 
     /**
