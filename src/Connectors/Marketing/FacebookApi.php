@@ -7,6 +7,9 @@ use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
 
 use FacebookAds\Api;
 use FacebookAds\Object\AdUser;
+use FacebookAds\Object\Campaign;
+use FacebookAds\Object\Fields\CampaignFields;
+use FacebookAds\Object\Values\AdObjectives;
 
 class FacebookApi extends Singleton {
     const ID = "facebook";
@@ -25,7 +28,7 @@ class FacebookApi extends Singleton {
      * @param $clientSecret
      * @throws ConnectorConfigException
      */
-    public function setApiKeys($clientId, $clientSecret, $accessToken) {
+    public function setApiKeys($clientId, $clientSecret) {
         if ((null === $clientId) || ("" === $clientId)) {
             throw new ConnectorConfigException("'clientId' parameter is required", 601);
         }
@@ -44,7 +47,6 @@ class FacebookApi extends Singleton {
      */
     public function setAccessToken(array $credentials) {
         $this->accessToken = $credentials["access_token"];
-
     }
 
     /**
@@ -55,7 +57,7 @@ class FacebookApi extends Singleton {
         try {
             Api::init($this->clientId, $this->clientSecret, $this->accessToken);
 
-            $me = new AdUser(FACEBOOK_SELF_USER);
+            $me = new AdUser(self::FACEBOOK_SELF_USER);
             $currentAdAccount = $me->getAdAccounts()->current();
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
@@ -64,4 +66,32 @@ class FacebookApi extends Singleton {
         return $currentAdAccount->getData();
     }
 
+    /**
+     * Service that creates a new campaign associated with an ad account
+     * @param $adAccountId
+     * @param $parameters
+     *      "name"          =>  Name of the campaign (required)
+     *      "objective"     =>  Objective of the campaign (default LINK_CLICKS, not required)
+     * @return Campaign
+     * @throws ConnectorServiceException
+     * @see FacebookAds\Object\Values\AdObjectives
+     */
+    public function createUserAdAccountCampaign($adAccountId, $parameters) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+            $campaign = new Campaign(null, $adAccountId);
+            $campaign->setData(array(
+                CampaignFields::NAME => $parameters["name"],
+                CampaignFields::OBJECTIVE => isset($parameters["objective"])?$parameters["objective"]:AdObjectives::LINK_CLICKS
+            ));
+
+            $campaign->create(array(
+                Campaign::STATUS_PARAM_NAME => isset($parameters["status"])?$parameters["status"]:Campaign::STATUS_PAUSED
+            ));
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $campaign;
+    }
 }
