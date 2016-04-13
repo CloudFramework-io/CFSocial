@@ -1009,7 +1009,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         }
         $pin = $this->createUserPin($id, $parameters['username'], $parameters['boardname'], $parameters['content'], $parameters['link'],
             $parameters['attachment_type'], $parameters['attachment']);
-        return array("post_id" => $pin["id"]);
+        return array("post_id" => $pin["id"], "url" => "https://pinterest.com/pin/" . $pin['id']);
     }
 
     /**

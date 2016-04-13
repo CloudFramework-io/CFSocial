@@ -443,7 +443,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
 
         if (200 === $this->client->getLastHttpCode()) {
             $post =  $response;
-            return array("post_id" => $post['id']);
+            return array("post_id" => $post['id'], "url" => "https://twitter.com/" . $id ."/" . $post['id']);
         } else {
             $lastBody = $this->client->getLastBody();
             throw new ConnectorServiceException($lastBody["errors"][0]["message"], $lastBody["errors"][0]["code"]);
