@@ -244,7 +244,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
         }
 
         $post = json_decode(json_encode($post), true);
-        return array("post_id" => $post["id"]);
+        return array("post_id" => $post["id"], "url" => "https://" . $parameters['blogname'] . ".tumblr.com/post/" . $post["id"]);
     }
 
     /**
