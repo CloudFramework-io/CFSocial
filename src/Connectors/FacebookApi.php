@@ -522,8 +522,9 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         }
 
         $graphNode = $response->getGraphNode();
+        list($idUser, $idPost) = explode("_", $graphNode["id"]);
 
-        $post = array("post_id" => $graphNode["id"]);
+        $post = array("post_id" => $graphNode["id"], "url" => "https://www.facebook.com/" . $idUser . "/posts/" . $idPost);
 
         return $post;
     }
@@ -560,7 +561,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $graphNode = $response->getGraphNode();
 
-        $post = array("post_id" => $graphNode["id"]);
+        $post = array("post_id" => $graphNode["id"], "url" => "https://facebook.com/" . $id . "/" . $graphNode["id"]);
 
         return $post;
     }

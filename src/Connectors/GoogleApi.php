@@ -710,7 +710,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException("Error creating post: " . $e->getMessage(), $e->getCode());
         }
 
-        return array('post_id' => $activity['id']);
+        return array('post_id' => $activity['id'], 'url' => $activity['url']);
     }
 
     /**
