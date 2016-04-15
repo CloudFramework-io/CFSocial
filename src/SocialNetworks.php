@@ -55,12 +55,13 @@ class SocialNetworks extends Singleton
      * @param $clientId
      * @param $clientSecret
      * @param array $clientScope
+     * @param $redirectUrl
      * @return mixed
      * @throws \Exception
      */
-    public function setApiKeys($social, $clientId, $clientSecret, $clientScope = array()) {
+    public function setApiKeys($social, $clientId, $clientSecret, $clientScope = array(), $redirectUrl = null) {
         $connector = $this->getSocialApi($social);
-        return $connector->setApiKeys($clientId, $clientSecret, $clientScope);
+        return $connector->setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl);
     }
 
     /**
@@ -505,9 +506,26 @@ class SocialNetworks extends Singleton
      * @param string $social
      * @param string $id    user id
      * @param array $parameters
-     *      "title"         =>      message for the media (mandatory)
-     *      "album_id"      =>      album where media will be saved in
-     *
+     * FACEBOOK
+     *      "media_type"    =>      "url" or "path"
+     *      "value"         =>      url or path of the image file
+     *      "title"         =>      message for the media
+     *      "album_id"      =>      album where media will be saved in (optional)
+     * VKONTAKTE
+     *      "media_type"    =>      "url" or "path"
+     *      "value"         =>      url or path of the image file
+     * FLICKR
+     *      "media_type"    =>      "url" or "path"
+     *      "value"         =>      url or path of the image file
+     *      "title"         =>      The title of the photo (optional)
+     *      "description"   =>      A description of the photo. May contain some limited HTML. (optional)
+     *      "tags           =>      A space-seperated list of tags to apply to the photo. (optional)
+     *      "is_public"     =>      Set to 0 for no, 1 for yes. Specifies who can view the photo. (optional)
+     *      "is_friend"     =>      Set to 0 for no, 1 for yes. Specifies who can view the photo. (optional)
+     *      "is_family"     =>      Set to 0 for no, 1 for yes. Specifies who can view the photo. (optional)
+     *      "safety_level"  =>      Set to 1 for Safe, 2 for Moderate, or 3 for Restricted. (optional)
+     *      "content_type"  =>      Set to 1 for Photo, 2 for Screenshot, or 3 for Other. (optional)
+     *      "hidden"        =>      Set to 1 to keep the photo in global search results, 2 to hide from public searches. (optional)
      * @return mixed
      * @throws \Exception
      */

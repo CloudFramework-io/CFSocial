@@ -31,9 +31,10 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @param $clientId
      * @param $clientSecret
      * @param $clientScope
+     * @param $redirectUrl
      * @throws ConnectorConfigException
      */
-    public function setApiKeys($clientId, $clientSecret, $clientScope) {
+    public function setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl = null) {
         if ((null === $clientId) || ("" === $clientId)) {
             throw new ConnectorConfigException("'clientId' parameter is required", 601);
         }
@@ -235,6 +236,10 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * Service that upload a photo to Facebook user's album
      * @param string $id    user id
      * @param $parameters
+     *      "media_type"    =>      "url" or "path"
+     *      "value"         =>      url or path of the image file
+     *      "title"         =>      message for the media
+     *      "album_id"      =>      album where media will be saved in (optional)
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -909,7 +914,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             throw new ConnectorConfigException("'maxResultsPerPage' parameter is not numeric");
         }
 
-        if (null === $maxResultsPerPage) {
+        if (null === $numberOfPages) {
             throw new ConnectorConfigException("'numberOfPages' parameter is required");
         } else if (!is_numeric($numberOfPages)) {
             throw new ConnectorConfigException("'numberOfPages' parameter is not numeric");

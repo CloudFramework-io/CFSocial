@@ -31,9 +31,10 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param $clientId
      * @param $clientSecret
      * @param $clientScope
+     * @param $redirectUrl
      * @throws ConnectorConfigException
      */
-    public function setApiKeys($clientId, $clientSecret, $clientScope) {
+    public function setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl = null) {
         if ((null === $clientId) || ("" === $clientId)) {
             throw new ConnectorConfigException("'clientId' parameter is required");
         }
@@ -881,7 +882,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorConfigException("'maxResultsPerPage' parameter is not numeric");
         }
 
-        if (null === $maxResultsPerPage) {
+        if (null === $numberOfPages) {
             throw new ConnectorConfigException("'numberOfPages' parameter is required");
         } else if (!is_numeric($numberOfPages)) {
             throw new ConnectorConfigException("'numberOfPages' parameter is not numeric");

@@ -7,7 +7,7 @@ namespace CloudFramework\Service\SocialNetworks\Interfaces;
  */
 interface SocialNetworkInterface {
 
-    function setApiKeys($clientId, $clientSecret, $clientScope);
+    function setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl);
     function requestAuthorization($redirectUrl);
     function authorize($code, $verifier, $redirectUrl);
     function setAccessToken(array $credentials);

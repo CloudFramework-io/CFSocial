@@ -27,9 +27,10 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
      * @param $clientId
      * @param $clientSecret
      * @param $clientScope
+     * @param $redirectUrl
      * @throws ConnectorConfigException
      */
-    public function setApiKeys($clientId, $clientSecret, $clientScope) {
+    public function setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl = null) {
         if ((null === $clientId) || ("" === $clientId)) {
             throw new ConnectorConfigException("'clientId' parameter is required");
         }
@@ -194,6 +195,8 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
      * Further info: https://vk.com/dev/upload_files?f=Uploading%20Photos%20on%20User%20Wall
      * @param string $id    user id
      * @param $parameters
+     *      "media_type"    =>      "url" or "path"
+     *      "value"         =>      url or path of the image file
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
