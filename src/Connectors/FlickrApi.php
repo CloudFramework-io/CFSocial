@@ -250,7 +250,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
      * Service that query to Flickr API for user photos
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
-     * @param integer $numberOfPages number of pages
+     * @param integer $pageNumber Specific page number
      * @param null $pageToken
      * @return array
      * @throws AuthenticationException
