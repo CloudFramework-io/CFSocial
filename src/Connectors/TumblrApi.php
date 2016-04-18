@@ -292,14 +292,18 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     /**
      * Service that gets the authenticated user's photo posts
      * @param $blogName
+     * @param $limit Maximum number of elements returned
      * @return mixed
      * @throws ConnectorServiceException
      */
-    public function exportUserPhotoPosts($blogName) {
+    public function exportUserPhotoPosts($blogName, $limit) {
         $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
 
         try {
-            $response = $this->client->getBlogPosts($blogName, array("type" => self::TUMBLR_PHOTO_POST_TYPE));
+            $response = $this->client->getBlogPosts($blogName, array(
+                "limit" => $limit,
+                "type" => self::TUMBLR_PHOTO_POST_TYPE
+            ));
         } catch (\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
@@ -307,6 +311,146 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
         $data = json_decode(json_encode($response), true);
 
         return array("posts" => $data["posts"]);
+    }
+
+    /**
+     * Service that gets the authenticated user's dashboard posts
+     * (posts from user followed by authenticated user)
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws ConnectorServiceException
+     */
+    public function exportUserDashboardPosts($limit) {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->getDashboardPosts(array("limit" => $limit));
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $data = json_decode(json_encode($response), true);
+
+        return array("posts" => $data["posts"]);
+    }
+
+    /**
+     * Service that gets the authenticated user's liked posts
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws ConnectorServiceException
+     */
+    public function exportUserLikedPosts($limit) {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->getLikedPosts(array("limit" => $limit));
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $data = $response->liked_posts;
+
+        return array("posts" => $data);
+    }
+
+    /**
+     * Service that gets the authenticated user's followed blogs
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws ConnectorServiceException
+     */
+    public function exportUserFollowedBlogs($limit) {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->getFollowedBlogs(array("limit" => $limit));
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $data = $response->blogs;
+
+        return array("blogs" => $data);
+    }
+
+    /**
+     * Service that modify the relationship between the authenticated user and a blog.
+     * @param $blogName
+     * @param $action follow / unfollow
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function modifyBlogRelationship($blogName, $action) {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->$action($blogName);
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return array("blog"=>$response->blog);
+    }
+
+    /**
+     * Service that modify the relationship between the authenticated user and a post.
+     * @param $postId
+     * @param $reblogKey The reblog key for the post id
+     * @param $action like / unlike
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function modifyPostRelationship($postId, $reblogKey, $action) {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->$action($postId, $reblogKey);
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return array("status"=>"success");
+    }
+
+    /**
+     * Service that gets the information about a blog
+     * @param $blogName
+     * @return mixed
+     * @throws ConnectorServiceException
+     */
+    public function getUserBlog($blogName) {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->getBlogInfo($blogName);
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $data = json_decode(json_encode($response), true);
+
+        return array("blog" => $data["blog"]);
+    }
+
+    /**
+     * Service that gets the avatar ofa blog
+     * @param $blogName
+     * @param $size. The size of the avatar (square, one value for both length and width).
+     *               Must be one of the values: 16, 24, 30, 40, 48, 64, 96, 128, 512
+     * @return mixed
+     * @throws ConnectorServiceException
+     */
+    public function getUserBlogAvatar($blogName, $size) {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->getBlogAvatar($blogName, $size);
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return array("avatar" => $response);
     }
 
     /**

@@ -716,9 +716,9 @@ class SocialNetworks extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function getUserBoard($social, $entity, $username, $boardname)    {
+    public function getUserBoard($social, $username, $boardname)    {
         $connector = $this->getSocialApi($social);
-        return $connector->getUserBoard($entity, $username, $boardname);
+        return $connector->getUserBoard($username, $boardname);
     }
 
     /**
@@ -959,12 +959,101 @@ class SocialNetworks extends Singleton
      * Service that gets the authenticated user's photo posts
      * @param $social
      * @param $blogName
+     * @param $limit Maximum number of elements returned
      * @return mixed
      * @throws \Exception
      */
-    public function exportUserPhotoPosts($social, $blogName) {
+    public function exportUserPhotoPosts($social, $blogName, $limit) {
         $connector = $this->getSocialApi($social);
-        return $connector->exportUserPhotoPosts($blogName);
+        return $connector->exportUserPhotoPosts($blogName, $limit);
+    }
+
+    /**
+     * Service that gets the authenticated user's dashboard posts
+     * @param $social
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserDashboardPosts($social, $limit) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportUserDashboardPosts($limit);
+    }
+
+    /**
+     * Service that gets the authenticated user's liked posts
+     * @param $social
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserLikedPosts($social, $limit) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportUserLikedPosts($limit);
+    }
+
+    /**
+     * Service that gets the authenticated user's followed blogs
+     * @param $social
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserFollowedBlogs($social, $limit) {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportUserFollowedBlogs($limit);
+    }
+
+    /**
+     * Service that modify the relationship between the authenticated user and the target blog in a social network.
+     * @param $social
+     * @param $blogName
+     * @param $action
+     * @return mixed
+     * @throws \Exception
+     */
+    public function modifyBlogRelationship($social, $blogName, $action) {
+        $connector = $this->getSocialApi($social);
+        return $connector->modifyBlogRelationship($blogName, $action);
+    }
+
+    /**
+     * Service that modify the relationship between the authenticated user and the target post in a social network.
+     * @param $social
+     * @param $postId
+     * @param $reblogKey
+     * @param $action
+     * @return mixed
+     * @throws \Exception
+     */
+    public function modifyPostRelationship($social, $postId, $reblogKey, $action) {
+        $connector = $this->getSocialApi($social);
+        return $connector->modifyPostRelationship($postId, $reblogKey, $action);
+    }
+
+    /**
+     * Service that query to a social network api to get settings of a blog
+     * @param string $social
+     * @param $blogName
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getUserBlog($social, $blogName)    {
+        $connector = $this->getSocialApi($social);
+        return $connector->getUserBlog($blogName);
+    }
+
+    /**
+     * Service that query to a social network api to get settings of a blog
+     * @param string $social
+     * @param $blogName
+     * @param $size
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getUserBlogAvatar($social, $blogName, $size)    {
+        $connector = $this->getSocialApi($social);
+        return $connector->getUserBlogAvatar($blogName, $size);
     }
 
     /******************************************************************************************************
