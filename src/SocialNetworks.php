@@ -558,13 +558,13 @@ class SocialNetworks extends Singleton
      * @param $social
      * @param string $id    user id
      * @param $title
-     * @param $caption
+     * @param $caption caption / description
      * @return mixed
      * @throws \Exception
      */
-    public function createUserPhotosAlbum($social, $id, $title, $caption) {
+    public function createUserPhotosAlbum($social, $id, $title, $caption, $primaryPhotoId = null) {
         $connector = $this->getSocialApi($social);
-        return $connector->createUserPhotosAlbum($id, $title, $caption);
+        return $connector->createUserPhotosAlbum($id, $title, $caption, $primaryPhotoId);
     }
 
     /**
@@ -1080,6 +1080,24 @@ class SocialNetworks extends Singleton
     public function getUserBlogFollowers($social, $blogName, $limit)    {
         $connector = $this->getSocialApi($social);
         return $connector->getUserBlogFollowers($blogName, $limit);
+    }
+
+    /******************************************************************************************************
+     **                                         FLICKR END POINTS                                      **
+     ******************************************************************************************************/
+
+    /**
+     * Service that add a photo to an existing album in a social network
+     * @param $social
+     * @param $albumId
+     * @param $photoId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function addUserPhotoToAlbum($social, $albumId, $photoId)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->addUserPhotoToAlbum($albumId, $photoId);
     }
 
     /******************************************************************************************************

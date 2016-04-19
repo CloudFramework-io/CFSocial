@@ -15,8 +15,12 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     const ID = "flickr";
 
     const PEOPLE_GETINFO_METHOD = "flickr.people.getInfo";
-    const PHOTO_COMMENT_ADD_METHOD = "flickr.photos.comments.addComment";
     const PEOPLE_GETPHOTOS_METHOD = "flickr.people.getPhotos";
+    const PHOTO_COMMENT_ADD_METHOD = "flickr.photos.comments.addComment";
+    const PHOTO_ALBUM_CREATE_METHOD = "flickr.photosets.create";
+    const PHOTO_ALBUM_PHOTO_ADD_METHOD = "flickr.photosets.addPhoto";
+    const PHOTO_ALBUM_GETPHOTOS_METHOD = "flickr.photosets.getPhotos";
+    const PHOTO_ALBUM_GETLIST_METHOD = "flickr.photosets.getList";
 
     // Flickr client object
     private $client;
@@ -282,6 +286,129 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
         );
     }
 
+    /**
+     * Service that creates an album with a primary photo
+     * @param $id
+     * @param $title
+     * @param $description
+     * @param $primaryPhotoId
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function createUserPhotosAlbum($id, $title, $description, $primaryPhotoId) {
+        $response = $this->client->call(self::PHOTO_ALBUM_CREATE_METHOD,
+            array(
+                "title" => $title,
+                "description" => $description,
+                "primary_photo_id" => $primaryPhotoId
+            ));
+
+        $ok = $response["stat"];
+
+        if ("fail" === $ok) {
+            throw new ConnectorServiceException($response["message"], $response["code"]);
+        }
+
+        return array(
+            "album" => $response["photoset"]
+        );
+    }
+
+    /**
+     * Service that add a photo to an existing album in Flickr
+     * @param $albumId
+     * @param $photoId
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function addUserPhotoToAlbum($albumId, $photoId) {
+        $response = $this->client->call(self::PHOTO_ALBUM_PHOTO_ADD_METHOD,
+            array(
+                "photoset_id" => $albumId,
+                "photo_id" => $photoId
+            ));
+
+        $ok = $response["stat"];
+
+        if ("fail" === $ok) {
+            throw new ConnectorServiceException($response["message"], $response["code"]);
+        }
+
+        return array(
+            "status" => "success"
+        );
+    }
+
+    /**
+     * Service that gets all photos in an user's album
+     * @param $albumId
+     * @param $maxResultsPerPage
+     * @param $pageNumber
+     * @param null $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function exportPhotosFromAlbum($albumId, $maxResultsPerPage, $pageNumber, $pageToken = null) {
+        $this->checkPagination($maxResultsPerPage, $pageNumber);
+
+        $response = $this->client->call(self::PHOTO_ALBUM_GETPHOTOS_METHOD,
+            array(
+                "photoset_id" => $albumId,
+                "user_id" => $this->client->getOauthData(FlickrWrapper::USER_NSID),
+                "per_page" => $maxResultsPerPage,
+                "page" => $pageNumber
+            ));
+
+        $ok = $response["stat"];
+
+        if ("fail" === $ok) {
+            throw new ConnectorServiceException($response["message"], $response["code"]);
+        }
+
+        $photos = json_decode(json_encode($response), true);
+
+        return array(
+            "photos" => $photos["photoset"]["photo"],
+            "total" => $photos["photoset"]["total"]
+        );
+
+    }
+
+    /**
+     * Service that gets a list of user's albums
+     * @param $id
+     * @param $maxResultsPerPage
+     * @param $pageNumber
+     * @param null $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function exportPhotosUserAlbumsList($id, $maxResultsPerPage, $pageNumber, $pageToken = null) {
+        $this->checkPagination($maxResultsPerPage, $pageNumber);
+
+        $response = $this->client->call(self::PHOTO_ALBUM_GETLIST_METHOD,
+            array(
+                "user_id" => $this->client->getOauthData(FlickrWrapper::USER_NSID),
+                "per_page" => $maxResultsPerPage,
+                "page" => $pageNumber
+            ));
+
+        $ok = $response["stat"];
+
+        if ("fail" === $ok) {
+            throw new ConnectorServiceException($response["message"], $response["code"]);
+        }
+
+        $photos = json_decode(json_encode($response), true);
+
+        return array(
+            "albums" => $photos["photosets"]["photoset"],
+            "total" => $photos["photosets"]["total"]
+        );
+
+    }
     /**
      * Method that check credentials are present and valid
      * @param array $credentials

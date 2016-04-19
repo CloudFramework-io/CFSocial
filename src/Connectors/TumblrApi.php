@@ -310,7 +310,10 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
 
         $data = json_decode(json_encode($response), true);
 
-        return array("posts" => $data["posts"]);
+        return array(
+            "posts" => $data["posts"],
+            "total" => $data["total_posts"]
+        );
     }
 
     /**
@@ -331,7 +334,9 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
 
         $data = json_decode(json_encode($response), true);
 
-        return array("posts" => $data["posts"]);
+        return array(
+            "posts" => $data["posts"]
+        );
     }
 
     /**
@@ -349,9 +354,10 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
-        $data = $response->liked_posts;
-
-        return array("posts" => $data);
+        return array(
+            "posts" => $response->liked_posts,
+            "total" => $response->liked_count
+        );
     }
 
     /**
@@ -369,9 +375,10 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
-        $data = $response->blogs;
-
-        return array("blogs" => $data);
+        return array(
+            "blogs" => $response->blogs,
+            "total" => $response->total_blogs
+        );
     }
 
     /**
@@ -469,9 +476,10 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
-        $data = $response->liked_posts;
-
-        return array("posts" => $data);
+        return array(
+            "posts" => $response->liked_posts,
+            "total" => $response->liked_count,
+        );
     }
 
     /**
@@ -491,9 +499,10 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
-        $data = $response->users;
-
-        return array("users" => $data);
+        return array(
+            "users" => $response->users,
+            "total" => $response->total_users
+        );
     }
 
     /**
