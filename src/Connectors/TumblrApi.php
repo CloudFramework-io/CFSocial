@@ -454,6 +454,49 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
+     * Service that query to Tumblr api to get the publicly exposed likes from a blog
+     * @param $blogName
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getUserBlogLikes($blogName, $limit)    {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->getBlogLikes($blogName, array("limit" => $limit));
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $data = $response->liked_posts;
+
+        return array("posts" => $data);
+    }
+
+    /**
+     * Service that query to a social network api to get followers from a blog
+     * @param string $social
+     * @param $blogName
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getUserBlogFollowers($blogName, $limit)    {
+        $this->client->getRequestHandler()->setBaseUrl(self::TUMBLR_API_BASE_URL);
+
+        try {
+            $response = $this->client->getBlogFollowers($blogName, array("limit" => $limit));
+        } catch (\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $data = $response->users;
+
+        return array("users" => $data);
+    }
+
+    /**
      * Method that check credentials are present and valid
      * @param array $credentials
      * @throws ConnectorConfigException

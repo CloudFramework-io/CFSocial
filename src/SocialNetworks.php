@@ -1056,6 +1056,32 @@ class SocialNetworks extends Singleton
         return $connector->getUserBlogAvatar($blogName, $size);
     }
 
+    /**
+     * Service that query to a social network api to get the publicly exposed likes from a blog
+     * @param string $social
+     * @param $blogName
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getUserBlogLikes($social, $blogName, $limit)    {
+        $connector = $this->getSocialApi($social);
+        return $connector->getUserBlogLikes($blogName, $limit);
+    }
+
+    /**
+     * Service that query to a social network api to get followers from a blog
+     * @param string $social
+     * @param $blogName
+     * @param $limit Maximum number of elements returned
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getUserBlogFollowers($social, $blogName, $limit)    {
+        $connector = $this->getSocialApi($social);
+        return $connector->getUserBlogFollowers($blogName, $limit);
+    }
+
     /******************************************************************************************************
      **                                         GENERAL UTILITIES                                        **
      ******************************************************************************************************/
