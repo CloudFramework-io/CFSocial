@@ -226,6 +226,22 @@ class SocialNetworks extends Singleton
     }
 
     /**
+     * Service that query to a social network api to get user's page posts
+     * @param string $social
+     * @param string $id    page id
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportPagePromotablePosts($social, $id, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPagePromotablePosts($id, $maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
      * Service that connect to social network api and request for media files for authenticated user
      * @param string $social
      * @param string $id    user id

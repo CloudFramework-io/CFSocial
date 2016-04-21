@@ -1263,4 +1263,130 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             "pageToken" => $pageToken,
         );
     }
+
+    /**
+     * Service that query to Facebook Api a followers count
+     * @param $id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function exportPagePosts($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+
+        $posts = array();
+        $count = 0;
+        do {
+            try {
+                $endpoint = "/" . $id . "/feed?limit=".$maxResultsPerPage;
+                if ($pageToken) {
+                    $endpoint .= "&until=".$pageToken;
+                }
+
+                if ($count == 0) {
+                    $response = $this->client->get($endpoint, $this->accessToken);
+                    $postsEdge = $response->getGraphEdge();
+                } else {
+                    $postsEdge = $this->client->next($postsEdge);
+                }
+
+                foreach ($postsEdge as $post) {
+                    $posts[$count][] = $post->asArray();
+                }
+
+                if (count($posts[$count]) == 0) break;
+                $count++;
+
+                // Extract until parameter to set pagetoken
+                $nextPageEndPoint = $postsEdge->getNextPageRequest()->getEndPoint();
+                $parameters = array();
+                parse_str(parse_url($nextPageEndPoint, PHP_URL_QUERY), $parameters);
+
+                $pageToken = null;
+                if (array_key_exists("until", $parameters)) {
+                    $pageToken = $parameters["until"];
+                }
+
+                // If number of pages == 0, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting posts: " . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+
+        return array(
+            'posts' => $posts[0],
+            "pageToken" => $pageToken
+        );
+    }
+
+    /**
+     * Service that query to Facebook Api a followers count
+     * @param $id
+     * @param $maxResultsPerPage
+     * @param $numberOfPages
+     * @param $pageToken
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function exportPagePromotablePosts($id, $maxResultsPerPage, $numberOfPages, $pageToken) {
+        $this->checkUser($id);
+        $this->checkPagination($maxResultsPerPage, $numberOfPages);
+
+        $posts = array();
+        $count = 0;
+        do {
+            try {
+                $endpoint = "/" . $id . "/promotable_posts?limit=".$maxResultsPerPage;
+                if ($pageToken) {
+                    $endpoint .= "&until=".$pageToken;
+                }
+
+                if ($count == 0) {
+                    $response = $this->client->get($endpoint, $this->accessToken);
+                    $postsEdge = $response->getGraphEdge();
+                } else {
+                    $postsEdge = $this->client->next($postsEdge);
+                }
+
+                foreach ($postsEdge as $post) {
+                    $posts[$count][] = $post->asArray();
+                }
+
+                if (count($posts[$count]) == 0) break;
+                $count++;
+
+                // Extract until parameter to set pagetoken
+                $nextPageEndPoint = $postsEdge->getNextPageRequest()->getEndPoint();
+                $parameters = array();
+                parse_str(parse_url($nextPageEndPoint, PHP_URL_QUERY), $parameters);
+
+                $pageToken = null;
+                if (array_key_exists("until", $parameters)) {
+                    $pageToken = $parameters["until"];
+                }
+
+                // If number of pages == 0, then all elements are returned
+                if (($numberOfPages > 0) && ($count == $numberOfPages)) {
+                    break;
+                }
+            } catch (Exception $e) {
+                throw new ConnectorServiceException("Error exporting posts: " . $e->getMessage(), $e->getCode());
+                $pageToken = null;
+            }
+        } while ($pageToken);
+
+        return array(
+            'posts' => $posts[0],
+            "pageToken" => $pageToken
+        );
+    }
 }

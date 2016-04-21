@@ -61,9 +61,9 @@ class Marketing extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function getCurrentAdAccount($social) {
+    public function getCurrentUserAdAccount($social) {
         $api = $this->getSocialApi($social);
-        return $api->getCurrentAdAccount();
+        return $api->getCurrentUserAdAccount();
     }
 
     /**
@@ -107,8 +107,44 @@ class Marketing extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function createUserAdAccountCampaign($social, $adAccountId, $parameters) {
+    public function createCampaign($social, $adAccountId, $parameters) {
         $api = $this->getSocialApi($social);
         return $api->createUserAdAccountCampaign($adAccountId, $parameters);
+    }
+
+    /**
+     * Service that gets an user's campaign information
+     * @param $social
+     * @param $campaignId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getUserCampaign($social, $campaignId) {
+        $api = $this->getSocialApi($social);
+        return $api->getUserCampaign($campaignId);
+    }
+
+    /**
+     * Service that deletes an user's campaign
+     * @param $social
+     * @param $campaignId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function deleteUserCampaign($social, $campaignId) {
+        $api = $this->getSocialApi($social);
+        return $api->deleteUserCampaign($campaignId);
+    }
+
+    /**
+     * Service that search geolocation codes from text parameter
+     * @param $type
+     * @param $text
+     * @return \FacebookAds\Cursor
+     * @throws ConnectorServiceException
+     */
+    public function searchGeolocationCode($social, $type, $text) {
+        $api = $this->getSocialApi($social);
+        return $api->searchGeolocationCode($type, $text);
     }
 }
