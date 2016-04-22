@@ -6,19 +6,20 @@ use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
 
 use FacebookAds\Api;
+use FacebookAds\Object\Ad;
+use FacebookAds\Object\AdCreative;
 use FacebookAds\Object\AdSet;
 use FacebookAds\Object\AdUser;
 use FacebookAds\Object\Campaign;
 use FacebookAds\Object\TargetingSearch;
 use FacebookAds\Object\TargetingSpecs;
+use FacebookAds\Object\Fields\AdCreativeFields;
+use FacebookAds\Object\Fields\AdFields;
 use FacebookAds\Object\Fields\AdSetFields;
 use FacebookAds\Object\Fields\CampaignFields;
 use FacebookAds\Object\Fields\TargetingSpecsFields;
 use FacebookAds\Object\Search\TargetingSearchTypes;
 use FacebookAds\Object\Values\AdObjectives;
-use FacebookAds\Object\Values\BillingEvents;
-use FacebookAds\Object\Values\OptimizationGoals;
-use FacebookAds\Object\Values\PageTypes;
 
 class FacebookApi extends Singleton {
     const ID = "facebook";
@@ -61,6 +62,7 @@ class FacebookApi extends Singleton {
     /**
      * Service that read user's basic ad account data
      * @return array
+     * @throws ConnectorServiceException
      */
     public function getCurrentUserAdAccount() {
         try {
@@ -107,7 +109,7 @@ class FacebookApi extends Singleton {
     public function createCampaign($adAccountId, $parameters) {
         try {
             Api::init($this->clientId, $this->clientSecret, $this->accessToken);
-            $campaign = new Campaign(null, $adAccountId);
+            $campaign = new Campaign(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
             $campaign->setData(array(
                 CampaignFields::NAME => $parameters["name"],
                 CampaignFields::OBJECTIVE => isset($parameters["objective"])?$parameters["objective"]:AdObjectives::POST_ENGAGEMENT
@@ -138,6 +140,7 @@ class FacebookApi extends Singleton {
                 CampaignFields::ID,
                 CampaignFields::NAME,
                 CampaignFields::OBJECTIVE,
+                CampaignFields::PROMOTED_OBJECT
             ));
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
@@ -182,9 +185,9 @@ class FacebookApi extends Singleton {
      *                              It must be set if objective of the campaign is either MOBILE_APP_ENGAGEMENT or
      *                              MOBILE_APP_INSTALLS
      *      TARGETING (BASIC, @TODO Basic with radius, Interest and Behavioural)
-     *          "countries":    array of geocodes of countries what the campaign is aimed to
-     *          "regions":      array of geocodes of regions what the campaign is aimed to
-     *          "cities":       array of geocodes of cities what the campaign is aimed to
+     *          "countries":    csv of geocodes of countries what the campaign is aimed to
+     *          "regions":      csv of geocodes of regions what the campaign is aimed to
+     *          "cities":       csv of geocodes of cities what the campaign is aimed to
      *          "gender":       1=male, 2=female. Defaults to all.
      *          "age_min":      Minimum age. If used, must be 13 or higher. If omitted, will default to 18
      *          "age_max":      Maximum age. If used, must be 65 or lower.
@@ -200,10 +203,11 @@ class FacebookApi extends Singleton {
      *          "start_time":   How long your ad will run: start_time. (UTC UNIX timestamp)
      *          "end_time":     How long your ad will run: end_time (UTC UNIX timestamp)
      *      BUDGET, OPTIMIZATION AND BILLING
-     *          "daily_budget":     The daily budget of the campaign, defined in your account currency; that is,
-     *                              how much money you want to spend per day
-     *          "lifetime_budget":  Lifetime budget, defined in your account currency. If specified, you must also
+     *          "daily_budget":     The daily budget of the campaign defined in the ad account currency, that is,
+     *                              how much money you want to spend per day. Example: 100 = 1,00€
+     *          "lifetime_budget":  Lifetime budget, defined in the ad account currency. If specified, you must also
      *                              specify an end_time. Either a daily_budget or a lifetime_budget must be specified.
+     *                               Example: 100 = 1,00€
      *          "optimization_goal": Which optimization goal (What result you want to achieve with your ad) this ad set
      *                              is using:
      *              NONE:               Only available in read mode for campaigns created pre v2.4
@@ -246,6 +250,8 @@ class FacebookApi extends Singleton {
      *                          1,000 occurrences, and has to be at least 2 US cents or more; that for ads with other
      *                          billing_event is for each occurrence, and has a minimum value 1 US cents. The minimum
      *                          bid amounts of other currencies are of similar value to the US Dollar values provided.
+     *          "is_autobid":   Boolean. Did the advertiser express the intent to bid automatically. This field is not available
+     *                          if bid_info or bid_amount is returned. See bid_amount
      * @return array
      * @throws ConnectorServiceException
      * @see FacebookApi::searchGeolocationCode
@@ -254,20 +260,30 @@ class FacebookApi extends Singleton {
      */
     public function createAdSet($adAccountId, $campaignId, $parameters) {
         try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            // Name
+            $adset = new AdSet(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
+            $adset->{AdSetFields::CAMPAIGN_ID} = $campaignId;
+
+            if (isset($parameters["name"])) {
+                $adset->{AdSetFields::NAME} = $parameters["name"];
+            }
+
             // Basic Targeting
             // Geolocation
             $geo_locations = array();
 
             if (isset($parameters["countries"])) {
-                $geo_locations["countries"] = $parameters["countries"];
+                $geo_locations["countries"] = explode(",", $parameters["countries"]);
             }
 
             if (isset($parameters["regions"])) {
-                $geo_locations["regions"] = $parameters["regions"];
+                $geo_locations["regions"] = explode(",", $parameters["regions"]);
             }
 
             if (isset($parameters["regions"])) {
-                $geo_locations["cities"] = $parameters["cities"];
+                $geo_locations["cities"] = explode(",", $parameters["cities"]);
             }
 
             if (count($geo_locations) > 0) {
@@ -275,6 +291,7 @@ class FacebookApi extends Singleton {
                 $targeting->{TargetingSpecsFields::GEO_LOCATIONS} = $geo_locations;
             }
 
+            // Gender
             if (isset($parameters["gender"])) {
                 if (!isset($targeting)) {
                     $targeting = new TargetingSpecs();
@@ -282,6 +299,7 @@ class FacebookApi extends Singleton {
                 }
             }
 
+            // Age
             if (isset($parameters["age_min"])) {
                 if (!isset($targeting)) {
                     $targeting = new TargetingSpecs();
@@ -296,23 +314,128 @@ class FacebookApi extends Singleton {
                 }
             }
 
+            // Page types
             if (isset($parameters["page_types"])) {
                 if (!isset($targeting)) {
                     $targeting = new TargetingSpecs();
                     $targeting->{TargetingSpecsFields::PAGE_TYPES} = $parameters["page_types"];
                 }
             }
+
+            if (isset($targeting)) {
+                $adset->{AdSetFields::TARGETING} = $targeting;
+            }
+
+            // Schedule
+            if (isset($parameters["start_time"])) {
+                $adset->{AdSetFields::START_TIME} = $parameters["start_time"];
+            }
+
+            if (isset($parameters["end_time"])) {
+                $adset->{AdSetFields::END_TIME} = $parameters["end_time"];
+            }
+
+            // Budget, optimization and billing
+            if (isset($parameters["daily_budget"])) {
+                $adset->{AdSetFields::DAILY_BUDGET} = $parameters["daily_budget"];
+            }
+
+            if (isset($parameters["lifetime_budget"])) {
+                $adset->{AdSetFields::LIFETIME_BUDGET} = $parameters["lifetime_budget"];
+            }
+
+            if (isset($parameters["optimization_goal"])) {
+                $adset->{AdSetFields::LIFETIME_BUDGET} = $parameters["optimization_goal"];
+            }
+
+            if (isset($parameters["billing_event"])) {
+                $adset->{AdSetFields::BILLING_EVENT} = $parameters["billing_event"];
+            }
+
+            if (isset($parameters["bid_amount"])) {
+                $adset->{AdSetFields::BID_AMOUNT} = $parameters["bid_amount"];
+            }
+
+            if (isset($parameters["is_autobid"])) {
+                $adset->{AdSetFields::IS_AUTOBID} = $parameters["is_autobid"];
+            }
+            //_printe($adset->getData());
+            // Adset creation
+            $adset->create(array(
+                AdSet::STATUS_PARAM_NAME => AdSet::STATUS_PAUSED,
+            ));
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
-        //return $campaign->getData();
+        return $adset->getData();
+    }
+
+    /**
+     * Service that creates a new adcreative for an existing page post
+     * @param $adAccountId
+     * @param $parameters
+     *      "name"      =>  AdCreative name
+     *      "post_id"   =>  Promotable post id
+     * @return AdCreative
+     * @throws ConnectorServiceException
+     */
+    public function createExistingPostAdCreative($adAccountId, $parameters) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $adcreative = new AdCreative(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
+
+            $adcreative->setData(array(
+                    AdCreativeFields::NAME => $parameters["name"],
+                    AdCreativeFields::OBJECT_STORY_ID => $parameters["post_id"]
+            ));
+
+            $adcreative->create();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $adcreative->getData();
+    }
+
+    /**
+     * Service that creates the final ad
+     * @param $adAccountId
+     * @param $adSetId
+     * @param $adCreativeId
+     * @param $parameters
+     * @return array
+     * @throws \Exception
+     */
+    public function createAd($adAccountId, $adSetId, $adCreativeId, $parameters) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $data = array(
+                AdFields::NAME => $parameters["name"],
+                AdFields::ADSET_ID => $adSetId,
+                AdFields::CREATIVE => array(
+                    'creative_id' => $adCreativeId
+                ),
+            );
+
+            $ad = new Ad(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
+            $ad->setData($data);
+            $ad->create(array(
+                Ad::STATUS_PARAM_NAME => Ad::STATUS_PAUSED,
+            ));
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $ad->getData();
     }
 
     /**
      * Service that search geolocation codes from text parameter
      * @param $type     "country", "region", "city", "zip"
-     * @param $text     e.g.: "japan", "andalucia", "malaga"
+     * @param $text     e.g.: "japan", "andalucia", "malaga", "29007"
      * @return \FacebookAds\Cursor
      * @throws ConnectorServiceException
      */

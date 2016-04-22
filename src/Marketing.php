@@ -109,7 +109,7 @@ class Marketing extends Singleton
      */
     public function createCampaign($social, $adAccountId, $parameters) {
         $api = $this->getSocialApi($social);
-        return $api->createUserAdAccountCampaign($adAccountId, $parameters);
+        return $api->createCampaign($adAccountId, $parameters);
     }
 
     /**
@@ -119,9 +119,9 @@ class Marketing extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function getUserCampaign($social, $campaignId) {
+    public function getCampaign($social, $campaignId) {
         $api = $this->getSocialApi($social);
-        return $api->getUserCampaign($campaignId);
+        return $api->getCampaign($campaignId);
     }
 
     /**
@@ -131,9 +131,51 @@ class Marketing extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function deleteUserCampaign($social, $campaignId) {
+    public function deleteCampaign($social, $campaignId) {
         $api = $this->getSocialApi($social);
-        return $api->deleteUserCampaign($campaignId);
+        return $api->deleteCampaign($campaignId);
+    }
+
+    /**
+     * Service that creates a new adset associated with a campaign
+     * @param $social
+     * @param $adAccountId
+     * @param $campaignId
+     * @param $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function createAdSet($social, $adAccountId, $campaignId, $parameters) {
+        $api = $this->getSocialApi($social);
+        return $api->createAdSet($adAccountId, $campaignId, $parameters);
+    }
+
+    /**
+     * Service that creates a new adcreative for an existing page post
+     * @param $social
+     * @param $adAccountId
+     * @param $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function createExistingPostAdCreative($social, $adAccountId, $parameters) {
+        $api = $this->getSocialApi($social);
+        return $api->createExistingPostAdCreative($adAccountId, $parameters);
+    }
+
+    /**
+     * Service that creates a new add associated with the campaign
+     * @param $social
+     * @param $adAccountId
+     * @param $adSetId
+     * @param $adCreativeId
+     * @param $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function createAd($social, $adAccountId, $adSetId, $adCreativeId, $parameters) {
+        $api = $this->getSocialApi($social);
+        return $api->createAd($adAccountId, $adSetId, $adCreativeId, $parameters);
     }
 
     /**
