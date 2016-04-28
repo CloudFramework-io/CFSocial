@@ -58,7 +58,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that request authorization to Instagram making up the Instagram login URL
+     * Service that requests authorization to Instagram making up the Instagram login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -160,7 +160,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that check if credentials are valid
+     * Service that checks if credentials are valid
      * @param array $credentials
      * @return null
      * @throws ConnectorConfigException
@@ -176,7 +176,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Instagram Api for users the user is followed by
+     * Service that queries to Instagram Api for users the user is followed by
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -232,7 +232,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Instagram Api for users the user is following
+     * Service that queries to Instagram Api for users the user is following
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -287,7 +287,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Instagram Api to get user profile
+     * Service that queries to Instagram Api to get user profile
      * @param string $id    user id
      * @return array
      * @throws ConnectorConfigException
@@ -323,7 +323,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Instagram Api service for media files
+     * Service that queries to Instagram Api service for media files
      * @param string $id    user id
      * @param integer $maxTotalResults.
      * @param integer $numberOfPages
@@ -443,7 +443,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that publish a comment in an Instagram user's media
+     * Service that publishes a comment in an Instagram user's media
      * @param string $id    user id
      * @param array $parameters
      *      "content" => Text of the comment
@@ -483,7 +483,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Instagram Api to get user relationship information
+     * Service that queries to Instagram Api to get user relationship information
      * @param string $id    user id
      * @param string $userId
      * @return array
@@ -507,7 +507,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that modify the relationship between the authenticated user and the target user.
+     * Service that modifies the relationship between the authenticated user and the target user.
      * @param string $id    user id
      * @param $userId
      * @param $action

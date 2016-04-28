@@ -57,7 +57,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that request authorization to Google making up the Google login URL
+     * Service that requests authorization to Google making up the Google login URL
      * @param string $redirectUrl
      * @return mixed
      * @throws ConnectorConfigException
@@ -144,7 +144,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that check if credentials are valid and authorized in google
+     * Service that checks if credentials are valid and authorized in google
      * @param array $credentials
      * @return mixed
      * @throws ConnectorConfigException
@@ -166,7 +166,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that refresh user's credentials and returns new ones
+     * Service that refreshes user's credentials and returns new ones
      * @param $credentials
      * @return mixed
      * @throws AuthenticationException
@@ -190,7 +190,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google api to revoke access token in order
+     * Service that queries to Google api to revoke access token in order
      * to ensure the permissions granted to the application are removed
      * @return array
      * @throws ConnectorConfigException
@@ -211,7 +211,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google Api for people in user circles
+     * Service that queries to Google Api for people in user circles
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -271,7 +271,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google Api for followers info (likes and shares) of a post
+     * Service that queries to Google Api for followers info (likes and shares) of a post
      * @param string $id user id
      * @param string $postId
      * @return array
@@ -317,7 +317,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google Api for posts/activities of a user
+     * Service that queries to Google Api for posts/activities of a user
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -371,7 +371,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google+ Api to get user profile
+     * Service that queries to Google+ Api to get user profile
      * @param string $id    user id
      * @return array
      * @throws ConnectorConfigException
@@ -412,7 +412,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google Api Drive service for images and videos
+     * Service that queries to Google Api Drive service for images and videos
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -468,7 +468,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that upload a media file (image/video) to Google+
+     * Service that uploads a media file (image/video) to Google+
      * @param string $id    user id
      * @param string $parameters
      *      "media_type"    =>      "url"|"path"
@@ -571,7 +571,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that publish in Google +
+     * Service that publishes in Google +
      * @param string $id    user id
      * @param array $parameters
      *      "content"   => Text of the comment
@@ -705,7 +705,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google Api for a list of circles for an user
+     * Service that queries to Google Api for a list of circles for an user
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -761,7 +761,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google Api for people in an specific circle
+     * Service that queries to Google Api for people in an specific circle
      * @param string $id    user id
      * @param string $circleId
      * @param integer $maxResultsPerPage maximum elements per page

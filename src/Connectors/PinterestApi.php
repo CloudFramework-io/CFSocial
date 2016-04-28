@@ -61,7 +61,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that request authorization to Pinterest making up the Pinterest login URL
+     * Service that requests authorization to Pinterest making up the Pinterest login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -78,6 +78,14 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         }
 
         $authUrl = $this->client->auth->getLoginUrl($redirectUrl, $this->clientScope);
+
+        if ((null === $authUrl) || (empty($authUrl))) {
+            throw new ConnectorConfigException("'authUrl' parameter is required");
+        } else {
+            if (!SocialNetworks::wellFormedUrl($authUrl)) {
+                throw new MalformedUrlException("'authUrl' is malformed");
+            }
+        }
 
         // Authentication request
         return $authUrl;
@@ -116,7 +124,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that check if credentials are valid
+     * Service that checks if credentials are valid
      * @param array $credentials
      * @return mixed
      * @throws ConnectorConfigException
@@ -132,7 +140,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api to get user profile
+     * Service that queries to Pinterest Api to get user profile
      * @param string $id    user id
      * @return array
      * @throws ConnectorConfigException
@@ -171,32 +179,32 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that search for an user
+     * Service that searches for an user
      * @param string $id    user id
-     * @param $name
+     * @param $usernameOrId
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
-    public function searchUsers($id, $username_or_id, $maxTotalResults = null, $numberOfPages = null,
+    public function searchUsers($id, $usernameOrId, $maxTotalResults = null, $numberOfPages = null,
                                 $nextPageUrl = null)
     {
         $this->checkUser($id);
-        $this->checkName($username_or_id);
+        $this->checkName($usernameOrId);
 
         try {
             $this->client->auth->setOAuthToken($this->accessToken);
-            $data = $this->client->users->find($username_or_id);
+            $data = $this->client->users->find($usernameOrId);
         } catch (Exception $e) {
             throw new ConnectorServiceException("Error searching for an user: " . $e->getMessage(), $e->getCode());
             $pageToken = null;
         }
 
-        return $data;
+        return $data->toArray();
     }
 
     /**
-     * Service that query to Pinterest Api for pins of the user
+     * Service that queries to Pinterest Api for pins of the user
      * @param string $id    user id
      * @param string $query if not null, search this token in the description of the authenticated user's pins
      * @param string $liked if true, search pins liked by the user
@@ -287,7 +295,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api for pins in a board
+     * Service that queries to Pinterest Api for pins in a board
      * @param string $username
      * @param string $boardname
      * @param integer $maxResultsPerPage.
@@ -363,9 +371,9 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api for boards of the user
+     * Service that queries to Pinterest Api for boards of the user
      * @param string $id    user id
-     * @param string $query if not null, search this token in the description of the authenticated user's pins
+     * @param string $query if not null, search this token in the description of the authenticated user's boards
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
      * @param string $pageToken
@@ -446,7 +454,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api for users the user is followed by
+     * Service that queries to Pinterest Api for users the authenticated user is followed by
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -517,7 +525,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api for users the user follows
+     * Service that queries to Pinterest Api for users the user follows
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -588,7 +596,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api for the boards that the authenticated user follows
+     * Service that queries to Pinterest Api for the boards that the authenticated user follows
      * @param string $id    user id
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
@@ -661,7 +669,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api for the topics that the authenticated user follows
+     * Service that queries to Pinterest Api for the topics that the authenticated user follows
      * @param string $id    user id
      * @param integer $maxResultsPerPage.
      * @param integer $numberOfPages
@@ -732,7 +740,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api to get settings of a board
+     * Service that queries to Pinterest Api to get settings of a board
      * @param $username
      * @param $boardname
      * @return array
@@ -783,7 +791,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that edit an existing board in Pinterest
+     * Service that edits an existing board in Pinterest
      * @param $username
      * @param $boardname
      * @param $name
@@ -816,7 +824,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that delete an existing board in Pinterest
+     * Service that deletes an existing board in Pinterest
      * @param $username
      * @param $boardname
      * @return array
@@ -838,7 +846,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Pinterest Api to get settings of a pin
+     * Service that queries to Pinterest Api to get settings of a pin
      * @param $id       pin id
      * @return array
      * @throws ConnectorConfigException
@@ -864,9 +872,12 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
      * @param $username
      * @param $boardname
      * @param $content
-     * @param $link
-     * @param $attachmentType
-     * @param $attachment
+     * @param $link.The URL the Pin will link to when you click through. (optional)
+     * @param $attachmentType. Allowed values are (required):
+     *          "image": Upload the image you want to pin using multipart form data (path).
+     *          "image_url": The link to the image that you want to Pin.
+     *          "image_base64": The link of a Base64 encoded image.
+     * @param $attachment. path, url or base64 of the image (required)
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -899,11 +910,11 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that edit an existing pin in Pinterest
-     * @param $id
-     * @param $board
-     * @param $note
-     * @param $link
+     * Service that edits / moves an existing pin in Pinterest
+     * @param $id   pin id
+     * @param $board. The board you want to move the Pin to, in the format <username>/<board_name>
+     * @param $note. Description of the pin
+     * @param $link. The URL the Pin will link to when you click through(optional)
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -933,7 +944,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that delete an existing board in Pinterest
+     * Service that deletes an existing board in Pinterest
      * @param $id
      * @return array
      * @throws ConnectorConfigException
@@ -952,10 +963,10 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that modify the relationship between the authenticated user and the target user.
+     * Service that modifies the relationship between the authenticated user and the target user.
      * @param string $id    user id
      * @param $userId
-     * @param $action
+     * @param $action. "follow" or "unfollow"
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -978,10 +989,10 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that modify the relationship between the authenticated user and a board.
+     * Service that modifies the relationship between the authenticated user and a board.
      * @param string $id    user id
-     * @param $boardId
-     * @param $action
+     * @param $boardId. <username>/<boardname>
+     * @param $action. "follow" or "unfollow"
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -1003,6 +1014,13 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         return array("status"=>"success");
     }
 
+    /**
+     * Service that creates a new pin in one of the user's boards in Pinterest
+     * @param $id
+     * @param array $parameters
+     * @return array
+     * @throws ConnectorServiceException
+     */
     public function post($id, array $parameters)
     {
         if(!array_key_exists('username', $parameters)) {
@@ -1014,7 +1032,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check credentials are present and valid
+     * Method that checks credentials are present and valid
      * @param array $credentials
      * @throws ConnectorConfigException
      */
@@ -1029,7 +1047,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check userId is ok
+     * Method that checks userId is ok
      * @param $userId
      * @throws ConnectorConfigException
      */
@@ -1040,7 +1058,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check search name is ok
+     * Method that checks search name is ok
      * @param $name
      * @throws ConnectorConfigException
      */
@@ -1051,7 +1069,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check boardId is ok
+     * Method that checks boardId is ok
      * @param $username
      * @param $boardname
      * @throws ConnectorConfigException
@@ -1064,7 +1082,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check pinId is ok
+     * Method that checks pinId is ok
      * @param $pinId
      * @throws ConnectorConfigException
      */
@@ -1075,7 +1093,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check pagination parameters are ok
+     * Method that checks pagination parameters are ok
      * @param $maxResultsPerPage
      * @param $numberOfPages
      * @throws ConnectorConfigException

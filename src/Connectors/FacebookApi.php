@@ -60,7 +60,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that request authorization to Facebook making up the Facebook login URL
+     * Service that requests authorization to Facebook making up the Facebook login URL
      * @param string $redirectUrl
      * @return array
      * @throws ConnectorConfigException
@@ -132,7 +132,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that check if credentials are valid
+     * Service that checks if credentials are valid
      * @param array $credentials
      * @return null
      * @throws ConnectorConfigException
@@ -148,7 +148,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that query to Facebook Api for posts of a user
+     * Service that queries to Facebook Api for posts of a user
      * @param $id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -209,7 +209,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that query to Facebook Api to get user profile
+     * Service that queries to Facebook Api to get user profile
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
@@ -241,7 +241,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that upload a photo to Facebook user's album
+     * Service that uploads a photo to Facebook user's album
      * @param string $id    user id
      * @param $parameters
      *      "media_type"    =>      "url" or "path"
@@ -317,7 +317,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that upload a photo to Facebook user's page album
+     * Service that uploads a photo to Facebook user's page album
      * @param string $id    page id
      * @param $parameters
      *      "media_type"    =>      "url" or "path"
@@ -394,7 +394,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that query to Facebook API for user photos
+     * Service that queries to Facebook API for user photos
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -447,7 +447,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that query to Facebook API for an user page photos
+     * Service that queries to Facebook API for an user page photos
      * @param string $id    page id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -542,7 +542,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that create a post in Facebook user's page feed
+     * Service that creates a post in Facebook user's page feed
      * @param string $id    page id
      * @param array $parameters
      *      "content"           =>  Text of the post (mandatory)
@@ -636,7 +636,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that get information of all user's photo albums in facebook
+     * Service that gets information of all user's photo albums in facebook
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -688,7 +688,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that get information of all user's page photo albums in facebook
+     * Service that gets information of all user's page photo albums in facebook
      * @param string $id    page id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -841,7 +841,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that query to Facebook Api to get page settings
+     * Service that queries to Facebook Api to get page settings
      * @param $id       page id
      * @return array
      * @throws ConnectorServiceException
