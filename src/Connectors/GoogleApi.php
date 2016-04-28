@@ -59,7 +59,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     /**
      * Service that request authorization to Google making up the Google login URL
      * @param string $redirectUrl
-     * @return array
+     * @return mixed
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
      */
@@ -193,7 +193,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * Service that query to Google api to revoke access token in order
      * to ensure the permissions granted to the application are removed
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -218,7 +217,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -274,10 +272,9 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
     /**
      * Service that query to Google Api for followers info (likes and shares) of a post
-     * @param string $userId
+     * @param string $id user id
      * @param string $postId
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -326,7 +323,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -377,8 +373,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     /**
      * Service that query to Google+ Api to get user profile
      * @param string $id    user id
-     * @return Google_Model
-     * @throws AuthenticationException
+     * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -417,13 +412,12 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Google Api Drive service for images
+     * Service that query to Google Api Drive service for images and videos
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -462,7 +456,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
                     break;
                 }
             } catch (Exception $e) {
-                throw new ConnectorServiceException("Error exporting images: " . $e->getMessage(), $e->getCode());
+                throw new ConnectorServiceException("Error exporting images and videos: " . $e->getMessage(), $e->getCode());
                 $pageToken = null;
             }
         } while ($pageToken);
@@ -479,8 +473,7 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param string $parameters
      *      "media_type"    =>      "url"|"path"
      *      "value"         =>      url or path
-     * @return array
-     * @throws AuthenticationException
+     * @return bool
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -573,13 +566,12 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
 
             return $result;
         } catch (Exception $e) {
-            throw new ConnectorServiceException("Error importing '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
+            throw new ConnectorServiceException("Error uploading '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
         }
     }
 
     /**
      * Service that publish in Google +
-     * @param string $entity "user"
      * @param string $id    user id
      * @param array $parameters
      *      "content"   => Text of the comment
@@ -596,7 +588,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      *      "person_id"  => Google + user whose domain the stream will be published in (mandatory in case of access_type = "person")
      *      "circle_id"  => Google circle where the stream will be published in (mandatory in case of access_type = "circle")
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -720,7 +711,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -778,7 +768,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -909,7 +898,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @deprecated
@@ -958,7 +946,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param string $userId
      * @param string $postId
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @deprecated
@@ -1003,7 +990,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @deprecated
@@ -1051,7 +1037,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @deprecated
@@ -1102,7 +1087,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      *      "media_type"    =>      "url"|"path"
      *      "value"         =>      url or path
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @deprecated
@@ -1193,7 +1177,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @deprecated
@@ -1245,7 +1228,6 @@ class GoogleApi extends Singleton implements SocialNetworkInterface {
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page for pagination
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @deprecated

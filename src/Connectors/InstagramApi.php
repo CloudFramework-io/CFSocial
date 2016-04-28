@@ -203,7 +203,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             $data = $this->curlGet($nextPageUrl);
 
             if ((null === $data["data"]) && ($data["meta"]["code"] !== 200)) {
-                throw new ConnectorServiceException("Error getting followers:".
+                throw new ConnectorServiceException("Error exporting followers:".
                     $data["meta"]["error_message"], $data["meta"]["code"]);
             }
 
@@ -258,7 +258,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
             $data = $this->curlGet($nextPageUrl);
 
             if ((null === $data["data"]) && ($data["meta"]["code"] !== 200)) {
-                throw new ConnectorServiceException("Error getting subscribers: " .
+                throw new ConnectorServiceException("Error exporting subscribers: " .
                     $data["meta"]["error_message"], $data["meta"]["code"]);
             }
 
@@ -382,7 +382,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that get the list of recent media liked by the owner
+     * Service that gets the list of recent media liked by the owner
      * @param string $id    user id
      * @param $maxTotalResults
      * @param $numberOfPages
@@ -443,7 +443,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that publish a comment in an user's Instagram media
+     * Service that publish a comment in an Instagram user's media
      * @param string $id    user id
      * @param array $parameters
      *      "content" => Text of the comment
@@ -532,7 +532,7 @@ class InstagramApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that search for users
+     * Service that searches for users
      * @param string $id    user id
      * @param $name
      * @param $maxTotalResults
