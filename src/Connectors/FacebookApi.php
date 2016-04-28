@@ -80,6 +80,14 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
 
         $authUrl = $redirect->getLoginUrl($redirectUrl, $this->clientScope);
 
+        if ((null === $authUrl) || (empty($authUrl))) {
+            throw new ConnectorConfigException("'authUrl' parameter is required");
+        } else {
+            if (!SocialNetworks::wellFormedUrl($authUrl)) {
+                throw new MalformedUrlException("'authUrl' is malformed");
+            }
+        }
+
         // Authentication request
         return $authUrl;
     }
@@ -140,7 +148,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that query to Facebook Api a followers count
+     * Service that query to Facebook Api for posts of a user
      * @param $id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -299,7 +307,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
                 $response = $this->client->post("/".$parameters["album_id"]."/photos", $params, $this->accessToken);
             }
         } catch (Exception $e) {
-            throw new ConnectorServiceException("Error importing '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
+            throw new ConnectorServiceException("Error uploading '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
         }
 
         $graphNode = $response->getGraphNode();
@@ -312,6 +320,10 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * Service that upload a photo to Facebook user's page album
      * @param string $id    page id
      * @param $parameters
+     *      "media_type"    =>      "url" or "path"
+     *      "value"         =>      url or path of the image file
+     *      "title"         =>      message for the media
+     *      "album_id"      =>      album where media will be saved in (optional)
      * @return array
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
@@ -372,7 +384,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
                 $response = $this->client->post("/".$parameters["album_id"]."/photos", $params, $pageinfo["access_token"]);
             }
         } catch (Exception $e) {
-            throw new ConnectorServiceException("Error importing '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
+            throw new ConnectorServiceException("Error uploading '".$parameters["value"]."'': " . $e->getMessage(), $e->getCode());
         }
 
         $graphNode = $response->getGraphNode();
@@ -435,7 +447,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that query to Facebook API for user photos
+     * Service that query to Facebook API for an user page photos
      * @param string $id    page id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
@@ -490,7 +502,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
-     * Service that create a post in Facebook user's feed
+     * Service that creates a post in Facebook user's feed
      * @param string $id    user id
      * @param array $parameters
      *      "content"           =>  Text of the post (mandatory)
@@ -736,7 +748,7 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
      * @return array
      * @throws \Exception
      */
-    public function exportPhotosFromAlbum($id, $albumId, $maxResultsPerPage, $numberOfPages, $pageToken) {
+    public function exportPhotosFromAlbum($albumId, $maxResultsPerPage, $numberOfPages, $pageToken) {
         $this->checkAlbum($albumId);
         $this->checkPagination($maxResultsPerPage, $numberOfPages);
 
