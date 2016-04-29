@@ -3,7 +3,6 @@ namespace CloudFramework\Service\SocialNetworks\Connectors;
 
 use Tumblr\API\Client;
 use CloudFramework\Patterns\Singleton;
-use CloudFramework\Service\SocialNetworks\Exceptions\AuthenticationException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
 use CloudFramework\Service\SocialNetworks\Exceptions\MalformedUrlException;
@@ -66,7 +65,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that request authorization to Tumblr making up the Tumblr login URL
+     * Service that requests authorization to Tumblr making up the Tumblr login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -113,7 +112,6 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
      * @param string $verifier
      * @param string $redirectUrl
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      * @throws MalformedUrlException
@@ -152,7 +150,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that inject the access token in connector
+     * Method that injects the access token in connector
      * @param array $credentials
      */
     public function setAccessToken(array $credentials) {
@@ -160,7 +158,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that check if credentials are valid
+     * Service that checks if credentials are valid
      * @param array $credentials
      * @return string
      * @throws ConnectorConfigException
@@ -177,7 +175,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Tumblr Api to get user profile
+     * Service that queries to Tumblr Api to get user profile
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
@@ -382,7 +380,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that modify the relationship between the authenticated user and a blog.
+     * Service that modifies the relationship between the authenticated user and a blog.
      * @param $blogName
      * @param $action follow / unfollow
      * @return array
@@ -401,7 +399,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that modify the relationship between the authenticated user and a post.
+     * Service that modifies the relationship between the authenticated user and a post.
      * @param $postId
      * @param $reblogKey The reblog key for the post id
      * @param $action like / unlike
@@ -461,7 +459,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Tumblr api to get the publicly exposed likes from a blog
+     * Service that queries to Tumblr api to get the publicly exposed likes from a blog
      * @param $blogName
      * @param $limit Maximum number of elements returned
      * @return mixed
@@ -483,7 +481,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to a social network api to get followers from a blog
+     * Service that queries to Tumblr api to get followers from a blog
      * @param string $social
      * @param $blogName
      * @param $limit Maximum number of elements returned
@@ -506,7 +504,7 @@ class TumblrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check credentials are present and valid
+     * Method that checks credentials are present and valid
      * @param array $credentials
      * @throws ConnectorConfigException
      */

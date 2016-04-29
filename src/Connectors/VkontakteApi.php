@@ -3,7 +3,6 @@ namespace CloudFramework\Service\SocialNetworks\Connectors;
 
 use \BW\Vkontakte;
 use CloudFramework\Patterns\Singleton;
-use CloudFramework\Service\SocialNetworks\Exceptions\AuthenticationException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
 use CloudFramework\Service\SocialNetworks\Exceptions\MalformedUrlException;
@@ -55,7 +54,7 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that request authorization to Vkontakte making up the Vkontakte login URL
+     * Service that requests authorization to Vkontakte making up the Vkontakte login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -75,6 +74,14 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
 
         $authUrl = $this->client->getLoginUrl();
 
+        if ((null === $authUrl) || (empty($authUrl))) {
+            throw new ConnectorConfigException("'authUrl' parameter is required");
+        } else {
+            if (!SocialNetworks::wellFormedUrl($authUrl)) {
+                throw new MalformedUrlException("'authUrl' is malformed");
+            }
+        }
+
         // Authentication request
         return $authUrl;
     }
@@ -85,10 +92,7 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
      * @param string $verifier
      * @param string $redirectUrl
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
-     * @throws ConnectorServiceException
-     * @throws MalformedUrlException
      */
     public function authorize($code, $verifier, $redirectUrl)
     {
@@ -106,7 +110,7 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that inject the access token in connector
+     * Method that injects the access token in connector
      * @param array $credentials
      */
     public function setAccessToken(array $credentials) {
@@ -114,7 +118,7 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that check if credentials are valid
+     * Service that checks if credentials are valid
      * @param array $credentials
      * @return string
      * @throws ConnectorConfigException
@@ -131,7 +135,7 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Vkontakte Api to get user profile
+     * Service that queries to Vkontakte Api to get user profile
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
@@ -158,14 +162,12 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Vkontakte API for user photos
+     * Service that queries to Vkontakte API for user photos
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $numberOfPages number of pages
      * @param string $pageToken Indicates a specific page
      * @return array
-     * @throws AuthenticationException
-     * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
     public function exportUserPhotos($id, $maxResultsPerPage, $numberOfPages, $pageToken)
@@ -191,7 +193,7 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that upload a photo to Vkontakte user's wall
+     * Service that uploads a photo to Vkontakte user's wall
      * Further info: https://vk.com/dev/upload_files?f=Uploading%20Photos%20on%20User%20Wall
      * @param string $id    user id
      * @param $parameters
@@ -276,8 +278,11 @@ class VkontakteApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
+     * Adds a new post on a user wall
      * @param $id
      * @param array $parameters
+     * @return mixed
+     * @throws ConnectorServiceException
      */
     public function post($id, array $parameters)
     {

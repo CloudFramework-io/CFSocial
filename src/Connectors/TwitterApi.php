@@ -58,7 +58,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that request authorization to Twitter making up the Twitter login URL
+     * Service that requests authorization to Twitter making up the Twitter login URL
      * @param string $redirectUrl
      * @throws ConnectorConfigException
      * @throws MalformedUrlException
@@ -97,10 +97,8 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
      * @param string $verifier
      * @param string $redirectUrl
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
-     * @throws MalformedUrlException
      */
     public function authorize($code, $verifier, $redirectUrl)
     {
@@ -133,7 +131,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that inject the access token in connector
+     * Method that injects the access token in connector
      * @param array $credentials
      */
     public function setAccessToken(array $credentials) {
@@ -141,7 +139,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that check if credentials are valid
+     * Service that checks if credentials are valid
      * @param array $credentials
      * @return string
      * @throws ConnectorConfigException
@@ -158,7 +156,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Twitter Api to get user profile
+     * Service that queries to Twitter Api to get user profile
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
@@ -189,10 +187,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Twitter Api to get user home timeline
+     * Service that queries to Twitter Api to get user home timeline
      * @param string $id    user id
      * @return array
      * @throws ConnectorServiceException
+     * @see https://dev.twitter.com/overview/api/tweets
      */
     public function getUserTimeline($id)
     {
@@ -207,10 +206,11 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Twitter Api to get single tweet information
+     * Service that queries to Twitter Api to get single tweet information
      * @param string $id    tweet id
      * @return array
      * @throws ConnectorServiceException
+     * @see https://dev.twitter.com/overview/api/tweets
      */
     public function getUserTweet($id)
     {
@@ -225,7 +225,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Twitter Api to delete a tweet
+     * Service that queries to Twitter Api to delete a tweet
      * @param string $id    tweet id
      * @return array
      * @throws ConnectorServiceException
@@ -243,7 +243,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Twitter Api for users the user is followed by
+     * Service that queries to Twitter Api for users the user is followed by
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -300,7 +300,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Twitter Api for users the user is following (friends)
+     * Service that queries to Twitter Api for users the user is following (friends)
      * @param string $id    user id
      * @param $maxResultsPerPage
      * @param $numberOfPages
@@ -357,13 +357,12 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that upload a media file (image/video) to Twitter
+     * Service that uploads a media file (image/video) to Twitter
      * @param string $id    user id
      * @param string $parameters
      *      "media_type"    =>      "url"|"path"
      *      "value"         =>      url or path
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -420,7 +419,7 @@ class TwitterApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that create a tweet in Twitter
+     * Service that creates a tweet in Twitter
      * @param string $id    user id
      * @param array $parameters
      *      "content"                   =>  Text of the tweet (required)

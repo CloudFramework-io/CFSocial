@@ -2,7 +2,6 @@
 namespace CloudFramework\Service\SocialNetworks\Connectors;
 
 use CloudFramework\Patterns\Singleton;
-use CloudFramework\Service\SocialNetworks\Exceptions\AuthenticationException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
 use CloudFramework\Service\SocialNetworks\Exceptions\MalformedUrlException;
@@ -63,7 +62,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that request authorization to Flickr. PHP Library redirects automatically
+     * Service that requests authorization to Flickr. PHP Library redirects automatically
      * @param null $redirectUrl
      * @return array
      * @throws ConnectorConfigException
@@ -83,10 +82,6 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
      * @param string $verifier
      * @param string $redirectUrl
      * @return array
-     * @throws AuthenticationException
-     * @throws ConnectorConfigException
-     * @throws ConnectorServiceException
-     * @throws MalformedUrlException
      */
     public function authorize($code, $verifier, $redirectUrl)
     {
@@ -108,7 +103,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that check if credentials are valid
+     * Service that checks if credentials are valid
      * @param array $credentials
      * @return string
      * @throws ConnectorConfigException
@@ -125,7 +120,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Flickr Api to get user profile
+     * Service that queries to Flickr Api to get user profile
      * @param null $id
      * @return array
      * @throws ConnectorServiceException
@@ -159,7 +154,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that upload a photo to Flickr
+     * Service that uploads a photo to Flickr
      * @param string $id    user id
      * @param $parameters
      *      "media_type"    =>      "url" or "path"
@@ -231,6 +226,13 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
         return array("photoid" => $response["photoid"]["_content"]);
     }
 
+    /**
+     * Service that creates a comment about a photo in flickr
+     * @param $id
+     * @param array $parameters
+     * @return array
+     * @throws ConnectorServiceException
+     */
     public function post($id, array $parameters)
     {
         $response = $this->client->call(self::PHOTO_COMMENT_ADD_METHOD,
@@ -251,13 +253,12 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that query to Flickr API for user photos
+     * Service that queries to Flickr API for user photos
      * @param string $id    user id
      * @param integer $maxResultsPerPage maximum elements per page
      * @param integer $pageNumber Specific page number
      * @param null $pageToken
      * @return array
-     * @throws AuthenticationException
      * @throws ConnectorConfigException
      * @throws ConnectorServiceException
      */
@@ -315,7 +316,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Service that add a photo to an existing album in Flickr
+     * Service that adds a photo to an existing album in Flickr
      * @param $albumId
      * @param $photoId
      * @return array
@@ -410,7 +411,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
 
     }
     /**
-     * Method that check credentials are present and valid
+     * Method that checks credentials are present and valid
      * @param array $credentials
      * @throws ConnectorConfigException
      */
@@ -429,7 +430,7 @@ class FlickrApi extends Singleton implements SocialNetworkInterface {
     }
 
     /**
-     * Method that check pagination parameters are ok
+     * Method that checks pagination parameters are ok
      * @param $maxResultsPerPage
      * @param $pageNumber
      * @throws ConnectorConfigException
