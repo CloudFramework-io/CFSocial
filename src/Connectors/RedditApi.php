@@ -50,6 +50,8 @@ class RedditApi extends Singleton implements SocialNetworkInterface {
         $this->clientScope = $clientScope;
 
         $this->client = new Client($this->clientId, $this->clientSecret, Client::AUTH_TYPE_AUTHORIZATION_BASIC);
+        //@TODO Look into user agent
+        $this->client->setCurlOption(CURLOPT_USERAGENT,"ChangeMeClient/0.1 by YourUsername");
     }
 
     /**
@@ -143,14 +145,19 @@ class RedditApi extends Singleton implements SocialNetworkInterface {
     {
         $response = $this->client->fetch(self::REDDIT_ENDPOINT_ME_URL);
 
-        if (isset($response["error"])) {
-            throw new ConnectorServiceException(
-                $response["error"]["error_msg"],
-                $response["error"]["error_code"]
-            );
-        }
+        $profile = [
+            "user_id" => null,
+            "name" => $response["result"]["name"],
+            "first_name" => null,
+            "last_name" => null,
+            "email" => null,
+            "photo" => null,
+            "locale" => null,
+            "url" => null,
+            "raw" => $response["result"]
+        ];
 
-        return $response[0];
+        return $profile;
     }
 
     function post($id, array $parameters)
