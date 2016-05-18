@@ -19,8 +19,17 @@
             "url": "https://github.com/CloudFramework-io/CFCore.git"
         },
         {
-            "type": "git",
-            "url": "https://github.com/cmcdonaldca/ohShopify.php.git"
+          "oh-shopify": {
+            "type": "package",
+            "package": {
+              "name": "cmcdonaldca/ohShopify.php",
+              "source": {
+                "url": "https://github.com/cmcdonaldca/ohShopify.php.git",
+                "type": "git",
+                "reference": "master"
+              }
+            }
+          }
         }
     ],
     "require": {
