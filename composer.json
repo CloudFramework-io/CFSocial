@@ -17,6 +17,10 @@
         {
             "type": "git",
             "url": "https://github.com/CloudFramework-io/CFCore.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/cmcdonaldca/ohShopify.php.git"
         }
     ],
     "require": {
