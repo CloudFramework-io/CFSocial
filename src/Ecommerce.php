@@ -125,6 +125,28 @@ class Ecommerce extends Singleton
     }
 
     /**
+     * Service that query to an ecommerce platform api to get shop information
+     * @param string $ecommerce
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getShop($ecommerce) {
+        $connector = $this->getEcommerceApi($ecommerce);
+        return $connector->getShop();
+    }
+
+    /**
+     * Service that query to an ecommerce platform api to get shop shipping zones information
+     * @param string $ecommerce
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getShopShippingZones($ecommerce) {
+        $connector = $this->getEcommerceApi($ecommerce);
+        return $connector->getShopShippingZones();
+    }
+
+    /**
      * Service that get a paginated list of products from the shop
      * @param $ecommerce
      * @param $maxResultsPerPage

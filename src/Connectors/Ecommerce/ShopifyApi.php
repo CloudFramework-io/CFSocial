@@ -13,6 +13,8 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
 
     const ID = "shopify";
     const SHOPIFY_ENDPOINT_CURRENT_USER_URL = "/admin/users/current.json";
+    const SHOPIFY_ENDPOINT_CURRENT_SHOP_URL = "/admin/shop.json";
+    const SHOPIFY_ENDPOINT_CURRENT_SHOP_SHIPPING_URL = "/admin/shipping_zones.json";
     const SHOPIFY_ENDPOINT_COLLECTIONS = "/admin/custom_collections.json";
     const SHOPIFY_ENDPOINT_COLLECTIONS_COUNT = "/admin/custom_collections/count.json";
     const SHOPIFY_ENDPOINT_PRODUCTS = "/admin/products.json";
@@ -145,7 +147,7 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
      */
     public function getProfile($id = null)
     {
-        $response = $this->client->call(self::SHOPIFY_ENDPOINT_CURRENT_USER_URL);
+        $response = $this->client->call('GET', self::SHOPIFY_ENDPOINT_CURRENT_USER_URL);
 
         $profile = [
             "user_id" => $response["user"]["id"],
@@ -160,6 +162,26 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
         ];
 
         return $profile;
+    }
+
+    /**
+     * Service that queries to Shopify Api to get shop information
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getShop()
+    {
+        return $this->client->call('GET', self::SHOPIFY_ENDPOINT_CURRENT_SHOP_URL);
+    }
+
+    /**
+     * Service that queries to Shopify Api to get shipping zones information in the shop
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getShopShippingZones()
+    {
+        return $this->client->call('GET', self::SHOPIFY_ENDPOINT_CURRENT_SHOP_SHIPPING_URL);
     }
 
     /**

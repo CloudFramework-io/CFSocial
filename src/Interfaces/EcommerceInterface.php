@@ -13,6 +13,8 @@ interface EcommerceInterface {
     function setAccessToken(array $credentials);
     function checkCredentials(array $credentials);
     function getProfile($id);
+    function getShop();
+    function getShopShippingZones();
     function exportProducts($maxResultsPerPage, $pageNumber, $collectionId);
     function exportCollections($maxResultsPerPage, $pageNumber);
 }
