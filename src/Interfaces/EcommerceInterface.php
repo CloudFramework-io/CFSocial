@@ -17,4 +17,5 @@ interface EcommerceInterface {
     function getShopShippingZones();
     function exportProducts($maxResultsPerPage, $pageNumber, $collectionId);
     function exportCollections($maxResultsPerPage, $pageNumber);
+    function createProduct(array $parameters);
 }

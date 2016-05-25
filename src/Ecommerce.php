@@ -173,6 +173,29 @@ class Ecommerce extends Singleton
         return $connector->exportCollections($maxResultsPerPage, $pageNumber);
     }
 
+    /**
+     * Service that creates a new product in the shop
+     * @param $ecommerce
+     * @param array $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function createProduct($ecommerce, array $parameters) {
+        $connector = $this->getEcommerceApi($ecommerce);
+        return $connector->createProduct($parameters);
+    }
+
+    /**
+     * Service that get all products from the shop
+     * @param $ecommerce
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportAllProducts($ecommerce) {
+        $connector = $this->getEcommerceApi($ecommerce);
+        return $connector->exportAllProducts();
+    }
+
     /******************************************************************************************************
      **                                         GENERAL UTILITIES                                        **
      ******************************************************************************************************/

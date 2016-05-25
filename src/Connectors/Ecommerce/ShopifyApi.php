@@ -3,6 +3,9 @@ namespace CloudFramework\Service\SocialNetworks\Connectors\Ecommerce;
 
 use CloudFramework\Patterns\Singleton;
 use CloudFramework\Service\SocialNetworks\Connectors\Ecommerce\Libraries\ShopifyClient;
+use CloudFramework\Service\SocialNetworks\Dtos\Ecommerce\ProductDTO;
+use CloudFramework\Service\SocialNetworks\Dtos\Ecommerce\ProductImageDTO;
+use CloudFramework\Service\SocialNetworks\Dtos\Ecommerce\ProductVariantDTO;
 use CloudFramework\Service\SocialNetworks\Ecommerce;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
@@ -36,7 +39,7 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
      * @param $clientId
      * @param $clientSecret
      * @param $clientScope
-     * @param $shop
+     * @param $shopDomain
      * @throws ConnectorConfigException
      */
     public function setApiKeys($clientId, $clientSecret, $clientScope, $shopDomain ) {
@@ -143,7 +146,6 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
      * Service that queries to Shopify Api to get user profile
      * @param string $id    user id
      * @return array
-     * @throws ConnectorServiceException
      */
     public function getProfile($id = null)
     {
@@ -230,6 +232,117 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
             'collections' => $collections,
             "totalCount" => $total
         );
+    }
+
+    /**
+     * Service that creates a new product in the shop
+     * @param array $parameters
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function createProduct(array $parameters) {
+        $product = array("product" => $parameters);
+        $response = $this->client->call('POST', self::SHOPIFY_ENDPOINT_PRODUCTS, $product);
+
+        return $response;
+    }
+
+    /**
+     * Service to import products to Shopify
+     * @param array of ProductDTO $products
+     * @return array
+     * @see ProductDTO
+     */
+    public function importProducts(array $products) {
+        $response = [];
+        foreach($products as $product) {
+            $productResponse = $this->createProduct($product->toArray());
+            $response[] = $productResponse;
+        }
+        return $response;
+    }
+
+    /**
+     * Service to export all products from Shopify
+     * @param array $products
+     * @return array
+     * @see ProductDTO
+     */
+    public function exportAllProducts() {
+        $maxResultsPerPage = 250; // Default
+        $pageNumber = 1;
+        $products = $this->exportProducts($maxResultsPerPage, $pageNumber);
+        $productsArr = [];
+        while (count($products["products"]) > 0) {
+            foreach($products["products"] as $product) {
+                $productObj = new ProductDTO();
+                $productObj->setRaw($product);
+                $productObj->setId($product["id"]);
+                $productObj->setTitle($product["title"]);
+                $productObj->setBodyHtml($product["body_html"]);
+                $productObj->setVendor($product["vendor"]);
+                $productObj->setProductType($product["product_type"]);
+                $productObj->setTags(stripslashes($product["tags"]));
+
+                if ((isset($product["images"])) && (count($product["images"]) > 0)) {
+                    $images = [];
+                    foreach($product["images"] as $image) {
+                        $imageObj = new ProductImageDTO();
+                        $imageObj->setType("src");
+                        $imageObj->setImage($image["src"]);
+                        $images[] = $imageObj;
+                    }
+                    $productObj->setImages($images);
+                }
+
+                if ((isset($product["variants"])) && (count($product["variants"]) > 0)) {
+                    $variants = [];
+                    foreach($product["variants"] as $variant) {
+                        $options = [];
+                        $optionId = 1;
+                        $variantObj = new ProductVariantDTO();
+                        $variantObj->setPrice($variant["price"]);
+                        $variantObj->setSku($variant["sku"]);
+                        $variantObj->setBarcode($variant["barcode"]);
+                        $variantObj->setWeight($variant["weight"]);
+                        $variantObj->setWeightUnit($variant["weight_unit"]);
+                        $variantObj->setVariantPosition($variant["position"]);
+                        $variantProperties = array_keys($variant);
+                        foreach($variantProperties as $variantProperty) {
+                            if ((false !== strpos($variantProperty, "option")) && (null !== $variant["option".$optionId])) {
+                                $options[] = $variant["option".$optionId];
+                                $optionId++;
+                            }
+                        }
+
+                        if (count($options) > 0) {
+                            $variantObj->setOptions($options);
+                        }
+
+                        $variants[] = $variantObj;
+                    }
+                    $productObj->setVariants($variants);
+                }
+
+                if ((isset($product["options"])) && (count($product["options"]) > 0)) {
+                    $options = [];
+                    foreach($product["options"] as $option) {
+                        $options[] = $option["name"];
+                    }
+                    $productObj->setOptions($options);
+                }
+
+                $productObj->setPublished((null === $product["published_at"])?false:true);
+
+                $productsArr[] = $productObj;
+            }
+
+            $pageNumber++;
+            $products = $this->exportProducts($maxResultsPerPage, $pageNumber);
+        }
+
+        return $productsArr;
     }
 
     /**
