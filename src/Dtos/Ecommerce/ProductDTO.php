@@ -247,7 +247,7 @@ class ProductDTO {
         $parameters["title"] = $this->title;
         $parameters["body_html"] = $this->bodyHtml;
         $parameters["vendor"] = $this->vendor;
-        $parameters["productType"] = $this->productType;
+        $parameters["product_type"] = $this->productType;
         $parameters["tags"] = addslashes($this->tags);
 
         if (count($this->images) > 0) {

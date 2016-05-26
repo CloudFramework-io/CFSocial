@@ -18,7 +18,7 @@ class ProductVariantDTO {
     private $price;
 
     /**
-     * @var string Price of the variant
+     * @var string SKU of the variant
      */
     private $sku;
 
@@ -33,7 +33,7 @@ class ProductVariantDTO {
     private $weight;
 
     /**
-     * @var float Weight unit of the variant:  "g", "kg, "oz", or "lb"
+     * @var string Weight unit of the variant:  "g", "kg, "oz", or "lb"
      */
     private $weightUnit;
 

@@ -270,7 +270,7 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
      * @see ProductDTO
      */
     public function exportAllProducts() {
-        $maxResultsPerPage = 250; // Default
+        $maxResultsPerPage = 250; // Maximum allowed by Shopify
         $pageNumber = 1;
         $products = $this->exportProducts($maxResultsPerPage, $pageNumber);
         $productsArr = [];
