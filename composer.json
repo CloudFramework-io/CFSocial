@@ -17,29 +17,10 @@
         {
             "type": "git",
             "url": "https://github.com/CloudFramework-io/CFCore.git"
-        },
-        {
-          "oh-shopify": {
-            "type": "package",
-            "package": {
-              "name": "cmcdonaldca/ohShopify.php",
-              "source": {
-                "url": "https://github.com/cmcdonaldca/ohShopify.php.git",
-                "type": "git",
-                "reference": "master"
-              }
-            }
-          }
         }
     ],
     "require": {
-        "cloudframework-io/core": "dev-master",
-        "abraham/twitteroauth": "^0.6.2",
-        "facebook/php-sdk-v4": "^5.1",
-        "google/apiclient": "^2.0.0@RC",
-        "dirkgroenen/Pinterest-API-PHP": "^0.2.10",
-        "tumblr/tumblr": "dev-master",
-        "cmcdonaldca/ohShopify.php": "*"
+        "cloudframework-io/core": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.8",
