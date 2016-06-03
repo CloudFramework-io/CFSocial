@@ -174,6 +174,18 @@ class Ecommerce extends Singleton
     }
 
     /**
+     * Service that get an specific collection from the shop
+     * @param $ecommerce
+     * @param $idCollection
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getCollection($ecommerce, $idCollection) {
+        $connector = $this->getEcommerceApi($ecommerce);
+        return $connector->getCollection($idCollection);
+    }
+
+    /**
      * Service that creates a new product in the shop
      * @param $ecommerce
      * @param array $parameters

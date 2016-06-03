@@ -18,10 +18,11 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
     const SHOPIFY_ENDPOINT_CURRENT_USER_URL = "/admin/users/current.json";
     const SHOPIFY_ENDPOINT_CURRENT_SHOP_URL = "/admin/shop.json";
     const SHOPIFY_ENDPOINT_CURRENT_SHOP_SHIPPING_URL = "/admin/shipping_zones.json";
-    const SHOPIFY_ENDPOINT_COLLECTIONS = "/admin/custom_collections.json";
-    const SHOPIFY_ENDPOINT_COLLECTIONS_COUNT = "/admin/custom_collections/count.json";
-    const SHOPIFY_ENDPOINT_PRODUCTS = "/admin/products.json";
-    const SHOPIFY_ENDPOINT_PRODUCTS_COUNT = "/admin/products/count.json";
+    const SHOPIFY_ENDPOINT_COLLECTIONS_URL = "/admin/custom_collections.json";
+    const SHOPIFY_ENDPOINT_COLLECTIONS_COUNT_URL = "/admin/custom_collections/count.json";
+    const SHOPIFY_ENDPOINT_COLLECTIONS_GET_URL = "/admin/custom_collections/";
+    const SHOPIFY_ENDPOINT_PRODUCTS_URL = "/admin/products.json";
+    const SHOPIFY_ENDPOINT_PRODUCTS_COUNT_URL = "/admin/products/count.json";
 
     // Shopify client object
     private $client;
@@ -169,7 +170,6 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
     /**
      * Service that queries to Shopify Api to get shop information
      * @return array
-     * @throws ConnectorServiceException
      */
     public function getShop()
     {
@@ -179,7 +179,6 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
     /**
      * Service that queries to Shopify Api to get shipping zones information in the shop
      * @return array
-     * @throws ConnectorServiceException
      */
     public function getShopShippingZones()
     {
@@ -204,8 +203,8 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
             $params["collection_id"] = $collectionId;
         }
 
-        $products = $this->client->call('GET', self::SHOPIFY_ENDPOINT_PRODUCTS, $params);
-        $total = $this->client->call('GET', self::SHOPIFY_ENDPOINT_PRODUCTS_COUNT);
+        $products = $this->client->call('GET', self::SHOPIFY_ENDPOINT_PRODUCTS_URL, $params);
+        $total = $this->client->call('GET', self::SHOPIFY_ENDPOINT_PRODUCTS_COUNT_URL);
         return array(
             'products' => $products,
             "totalCount" => $total
@@ -226,8 +225,8 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
             "page" => $pageNumber
         );
 
-        $collections = $this->client->call('GET', self::SHOPIFY_ENDPOINT_COLLECTIONS, $params);
-        $total = $this->client->call('GET', self::SHOPIFY_ENDPOINT_COLLECTIONS_COUNT);
+        $collections = $this->client->call('GET', self::SHOPIFY_ENDPOINT_COLLECTIONS_URL, $params);
+        $total = $this->client->call('GET', self::SHOPIFY_ENDPOINT_COLLECTIONS_COUNT_URL);
         return array(
             'collections' => $collections,
             "totalCount" => $total
@@ -235,15 +234,23 @@ class ShopifyApi extends Singleton implements EcommerceInterface {
     }
 
     /**
+     * Service that queries to Shopify Api to get a custom collection information
+     * @param $idCollection
+     * @return mixed
+     */
+    public function getCollection($idCollection)
+    {
+        return $this->client->call('GET', self::SHOPIFY_ENDPOINT_COLLECTIONS_GET_URL . $idCollection . ".json");
+    }
+
+    /**
      * Service that creates a new product in the shop
      * @param array $parameters
-     * @return array
-     * @throws ConnectorConfigException
-     * @throws ConnectorServiceException
+     * @return mixed
      */
     public function createProduct(array $parameters) {
         $product = array("product" => $parameters);
-        $response = $this->client->call('POST', self::SHOPIFY_ENDPOINT_PRODUCTS, $product);
+        $response = $this->client->call('POST', self::SHOPIFY_ENDPOINT_PRODUCTS_URL, $product);
 
         return $response;
     }
