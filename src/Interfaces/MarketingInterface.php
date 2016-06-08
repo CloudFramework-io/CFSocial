@@ -5,7 +5,7 @@ namespace CloudFramework\Service\SocialNetworks\Interfaces;
  * Interface SocialNetworksInterface
  * @package CloudFramework\Service\SocialNetworks\Interfaces
  */
-interface SocialNetworkInterface {
+interface MarketingInterface {
 
     function setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl);
     function requestAuthorization($redirectUrl);
@@ -13,5 +13,4 @@ interface SocialNetworkInterface {
     function setAccessToken(array $credentials);
     function checkCredentials(array $credentials);
     function getProfile($id);
-    function post($id, array $parameters);
 }

@@ -2,15 +2,21 @@
 namespace CloudFramework\Service\SocialNetworks\Connectors\Marketing;
 
 use CloudFramework\Patterns\Singleton;
+use CloudFramework\Service\SocialNetworks\Marketing;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorConfigException;
 use CloudFramework\Service\SocialNetworks\Exceptions\ConnectorServiceException;
+use CloudFramework\Service\SocialNetworks\Exceptions\MalformedUrlException;
+use CloudFramework\Service\SocialNetworks\Interfaces\MarketingInterface;
 
+use Facebook\Facebook;
 use FacebookAds\Api;
 use FacebookAds\Object\Ad;
+use FacebookAds\Object\AdAccount;
 use FacebookAds\Object\AdCreative;
 use FacebookAds\Object\AdSet;
 use FacebookAds\Object\AdUser;
 use FacebookAds\Object\Campaign;
+use FacebookAds\Object\Fields\AdAccountFields;
 use FacebookAds\Object\TargetingSearch;
 use FacebookAds\Object\TargetingSpecs;
 use FacebookAds\Object\Fields\AdCreativeFields;
@@ -21,24 +27,30 @@ use FacebookAds\Object\Fields\TargetingSpecsFields;
 use FacebookAds\Object\Search\TargetingSearchTypes;
 use FacebookAds\Object\Values\AdObjectives;
 
-class FacebookApi extends Singleton {
+class FacebookApi extends Singleton implements MarketingInterface {
     const ID = "facebook";
     const FACEBOOK_SELF_USER = "me";
+
+    // Facebook client object
+    private $client;
 
     // API keys
     private $clientId;
     private $clientSecret;
+    private $clientScope = array();
 
     // Auth keys
     private $accessToken;
 
     /**
-     * Set Facebook Ads Api keys
+     * Set Facebook Api keys
      * @param $clientId
      * @param $clientSecret
+     * @param $clientScope
+     * @param $redirectUrl
      * @throws ConnectorConfigException
      */
-    public function setApiKeys($clientId, $clientSecret) {
+    public function setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl = null) {
         if ((null === $clientId) || ("" === $clientId)) {
             throw new ConnectorConfigException("'clientId' parameter is required", 601);
         }
@@ -47,8 +59,76 @@ class FacebookApi extends Singleton {
             throw new ConnectorConfigException("'clientSecret' parameter is required", 602);
         }
 
+        if ((null === $clientScope) || (!is_array($clientScope)) || (count($clientScope) == 0)) {
+            throw new ConnectorConfigException("'clientScope' parameter is required", 603);
+        }
+
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
+        $this->clientScope = $clientScope;
+
+        $this->client = new Facebook(array(
+            "app_id" => $this->clientId,
+            "app_secret" => $this->clientSecret,
+            'default_graph_version' => 'v2.4',
+            'cookie' => true
+        ));
+    }
+
+    /**
+     * Service that request authorization to Facebook making up the Facebook login URL
+     * @param string $redirectUrl
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws MalformedUrlException
+     */
+    public function requestAuthorization($redirectUrl)
+    {
+        if ((null === $redirectUrl) || (empty($redirectUrl))) {
+            throw new ConnectorConfigException("'redirectUrl' parameter is required", 628);
+        } else {
+            if (!Marketing::wellFormedUrl($redirectUrl)) {
+                throw new MalformedUrlException("'redirectUrl' is malformed", 601);
+            }
+        }
+
+        $redirect = $this->client->getRedirectLoginHelper();
+
+        $authUrl = $redirect->getLoginUrl($redirectUrl, $this->clientScope);
+
+        // Authentication request
+        return $authUrl;
+    }
+
+    /**
+     * Authentication service from Facebook sign in request
+     * @param string $code
+     * @param string $verifier
+     * @param $redirectUrl
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function authorize($code, $verifier, $redirectUrl = null)
+    {
+        try {
+            if(!array_key_exists('code', $_GET)) {
+                $_GET['code'] = $code;
+            }
+            if(!array_key_exists('state', $_GET)) {
+                $_GET['state'] = $verifier;
+            }
+            /** @var FacebookRedirectLoginHelper $helper */
+            $helper = $this->client->getRedirectLoginHelper();
+            $accessToken = $helper->getAccessToken($redirectUrl);
+
+            if (empty($accessToken)) {
+                throw new ConnectorServiceException("Error taking access token from Facebook Api", 500);
+            }
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return array("access_token" => $accessToken->getValue());
     }
 
     /**
@@ -57,6 +137,50 @@ class FacebookApi extends Singleton {
      */
     public function setAccessToken(array $credentials) {
         $this->accessToken = $credentials["access_token"];
+    }
+
+    /**
+     * Service that checks if credentials are valid
+     * @param array $credentials
+     * @return null
+     * @throws ConnectorConfigException
+     */
+    public function checkCredentials(array $credentials) {
+        $this->checkCredentialsParameters($credentials);
+        try {
+            return $this->getProfile(self::FACEBOOK_SELF_USER);
+        } catch(\Exception $e) {
+            throw new ConnectorConfigException("Invalid credentials set");
+        }
+    }
+
+    /**
+     * Service that queries to Facebook Api to get user profile
+     * @param string $id    user id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getProfile($id) {
+        $this->checkUser($id);
+        try {
+            $response = $this->client->get("/".$id."?fields=id,name,first_name,middle_name,last_name,email,cover,locale,website,link,picture", $this->accessToken);
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException('Error getting user profile: ' . $e->getMessage(), $e->getCode());
+        }
+        /** @var  $graphUser */
+        $graphUser = $response->getGraphUser();
+        $profile = array(
+            "user_id" => $graphUser->getId(),
+            "name" => $graphUser->getName(),
+            "first_name" => $graphUser->getFirstName(),
+            "last_name" => $graphUser->getLastName(),
+            "email" => $graphUser->getEmail(),
+            "photo" => $graphUser->getPicture()->getUrl(),
+            "locale" => $graphUser->getField('locale', 'en'),
+            "url" => $graphUser->getLink(),
+            "raw" => json_decode($graphUser, true)
+        );
+        return $profile;
     }
 
     /**
@@ -69,12 +193,103 @@ class FacebookApi extends Singleton {
             Api::init($this->clientId, $this->clientSecret, $this->accessToken);
 
             $me = new AdUser(self::FACEBOOK_SELF_USER);
-            $currentAdAccount = $me->getAdAccounts()->current();
+            $fields = array(
+                AdAccountFields::ID,
+                AdAccountFields::NAME,
+                AdAccountFields::ACCOUNT_STATUS,
+                AdAccountFields::BALANCE
+            );
+
+            $currentAdAccount = $me->getAdAccounts($fields)->current();
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
         return $currentAdAccount->getData();
+    }
+
+    /**
+     * Service that gets user's ad accounts
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function exportUserAdAccounts() {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $me = new AdUser(self::FACEBOOK_SELF_USER);
+            $fields = array(
+                AdAccountFields::ID,
+                AdAccountFields::NAME,
+                AdAccountFields::ACCOUNT_STATUS,
+                AdAccountFields::BALANCE
+            );
+            $adAccounts = $me->getAdAccounts($fields)->getArrayCopy();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $addAccountsArr = [];
+        foreach($adAccounts as $adAccount) {
+            $addAccountsArr[] = $adAccount->getData();
+        }
+
+        return $addAccountsArr;
+    }
+
+    /**
+     * Service that get the user's ad account data by its id
+     * @param $id - Ad Account Id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getAdAccount($id) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $adAccount = new AdAccount($id);
+            $adAccount->read(array(
+                AdAccountFields::ID,
+                AdAccountFields::NAME,
+                AdAccountFields::ACCOUNT_STATUS,
+                AdAccountFields::BALANCE
+            ));
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $adAccount->getData();
+    }
+
+    /**
+     * Service that gets user's ad account campaigns
+     * @param $id - Ad Account Id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function exportUserAdAccountCampaigns($id) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $adAccount = new AdAccount($id);
+            $fields = array(
+                CampaignFields::ID,
+                CampaignFields::ACCOUNT_ID,
+                CampaignFields::NAME,
+                CampaignFields::EFFECTIVE_STATUS,
+                CampaignFields::CONFIGURED_STATUS
+            );
+            $campaigns = $adAccount->getCampaigns($fields)->getArrayCopy();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $campaignsArr = [];
+        foreach($campaigns as $campaign) {
+            $campaignsArr[] = $campaign->getData();
+        }
+
+        return $campaignsArr;
     }
 
     /**
@@ -138,9 +353,12 @@ class FacebookApi extends Singleton {
             $campaign = new Campaign($campaignId);
             $campaign->read(array(
                 CampaignFields::ID,
+                CampaignFields::ACCOUNT_ID,
                 CampaignFields::NAME,
                 CampaignFields::OBJECTIVE,
-                CampaignFields::PROMOTED_OBJECT
+                CampaignFields::PROMOTED_OBJECT,
+                CampaignFields::EFFECTIVE_STATUS,
+                CampaignFields::CONFIGURED_STATUS
             ));
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
@@ -851,6 +1069,31 @@ class FacebookApi extends Singleton {
 
         if ((null === $text) || ("" === $text)) {
             throw new ConnectorConfigException("'text' parameter is required");
+        }
+    }
+
+    /**
+     * Method that check credentials are present and valid
+     * @param array $credentials
+     * @throws ConnectorConfigException
+     */
+    private function checkCredentialsParameters(array $credentials) {
+        if ((null === $credentials) || (!is_array($credentials)) || (count($credentials) == 0)) {
+            throw new ConnectorConfigException("Invalid credentials set'");
+        }
+        if ((!isset($credentials["access_token"])) || (null === $credentials["access_token"]) || ("" === $credentials["access_token"])) {
+            throw new ConnectorConfigException("'access_token' parameter is required");
+        }
+    }
+
+    /**
+     * Method that check userId is ok
+     * @param $userId
+     * @throws ConnectorConfigException
+     */
+    private function checkUser($userId) {
+        if ((null === $userId) || ("" === $userId)) {
+            throw new ConnectorConfigException("'userId' parameter is required");
         }
     }
 }

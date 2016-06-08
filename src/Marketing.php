@@ -10,6 +10,20 @@ use CloudFramework\Patterns\Singleton;
 class Marketing extends Singleton
 {
     /**
+     * @return string
+     */
+    public static function generateRequestUrl()
+    {
+        $protocol = (array_key_exists("HTTPS", $_SERVER) && $_SERVER["HTTPS"] === 'on') ? 'https' : 'http';
+        $domain = $_SERVER['SERVER_NAME'];
+        $port = "";
+        if (array_key_exists('SERVER_PORT', $_SERVER)) {
+            $port = ":" . $_SERVER['SERVER_PORT'];
+        }
+        return "$protocol://$domain$port/";
+    }
+
+    /**
      * Method that initialize a social api instance to use
      * @param $social
      * @return \CloudFramework\Service\SocialNetworks\Interfaces\SocialNetworkInterface
@@ -38,9 +52,9 @@ class Marketing extends Singleton
      * @return mixed
      * @throws \Exception
      */
-    public function setApiKeys($social, $clientId, $clientSecret, $accessToken) {
+    public function setApiKeys($social, $clientId, $clientSecret, $clientScope = array(), $redirectUrl = null) {
         $api = $this->getSocialApi($social);
-        return $api->setApiKeys($clientId, $clientSecret, $accessToken);
+        return $api->setApiKeys($clientId, $clientSecret, $clientScope, $redirectUrl);
     }
 
     /**
@@ -51,8 +65,65 @@ class Marketing extends Singleton
      * @throws \Exception
      */
     public function setAccessToken($social, array $credentials) {
-        $connector = $this->getSocialApi($social);
-        return $connector->setAccessToken($credentials);
+        $api = $this->getSocialApi($social);
+        return $api->setAccessToken($credentials);
+    }
+
+    /**
+     * Service to request authorization to the social network
+     * @param string $social
+     * @param string $redirectUrl
+     * @param boolean $force
+     * @return mixed
+     * @throws \Exception
+     */
+    public function requestAuthorization($social, $redirectUrl, $force = false)
+    {
+        $api = $this->getSocialApi($social);
+        if($force && method_exists($api, 'forceAuth')) {
+            $api->forceAuth(true);
+        }
+        return $api->requestAuthorization($redirectUrl);
+    }
+
+    /**
+     * Service that authorize a user in the social network.
+     * (This method receives the callback from the social network after login)
+     * @param string $social
+     * @param string $code
+     * @param string $verifier
+     * @param string $redirectUrl
+     * @return mixed
+     * @throws \Exception
+     */
+    public function confirmAuthorization($social, $code = null, $verifier = null, $redirectUrl = null)
+    {
+        $api = $this->getSocialApi($social);
+        return $api->authorize($code, $verifier, $redirectUrl);
+    }
+
+    /**
+     * Service that check if session user's credentials are authorized and not expired / revoked
+     * @param $social
+     * @param $credentials
+     * @return mixed
+     * @throws \Exception
+     */
+    public function checkCredentials($social, $credentials) {
+        $api = $this->getSocialApi($social);
+        return $api->checkCredentials($credentials);
+    }
+
+    /**
+     * Service that query to a social network api to get user profile
+     * @param string $social
+     * @param string $id user id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getProfile($social, $id) {
+        $api = $this->getSocialApi($social);
+        return $api->getProfile($id);
     }
 
     /**
@@ -64,6 +135,41 @@ class Marketing extends Singleton
     public function getCurrentUserAdAccount($social) {
         $api = $this->getSocialApi($social);
         return $api->getCurrentUserAdAccount();
+    }
+
+    /**
+     * Service that gets user's ad accounts
+     * @param $social
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserAdAccounts($social) {
+        $api = $this->getSocialApi($social);
+        return $api->exportUserAdAccounts();
+    }
+
+    /**
+     * Service that get the user's ad account data by its id
+     * @param $social
+     * @param $id - Ad Account Id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getAdAccount($social, $id) {
+        $api = $this->getSocialApi($social);
+        return $api->getAdAccount($id);
+    }
+
+    /**
+     * Service that gets user's ad account campaigns
+     * @param $social
+     * @param $id - Ad Account Id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserAdAccountCampaigns($social, $id) {
+        $api = $this->getSocialApi($social);
+        return $api->exportUserAdAccountCampaigns($id);
     }
 
     /**
@@ -366,5 +472,21 @@ class Marketing extends Singleton
     public function searchGeolocationCode($social, $type, $text) {
         $api = $this->getSocialApi($social);
         return $api->searchGeolocationCode($type, $text);
+    }
+
+    /******************************************************************************************************
+     **                                         GENERAL UTILITIES                                        **
+     ******************************************************************************************************/
+    /**
+     * General function to check url format
+     * @param $redirectUrl
+     * @return bool
+     */
+    public static function wellFormedUrl($redirectUrl) {
+        if (!filter_var($redirectUrl, FILTER_VALIDATE_URL) === false) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
