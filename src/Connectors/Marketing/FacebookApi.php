@@ -17,6 +17,7 @@ use FacebookAds\Object\AdSet;
 use FacebookAds\Object\AdUser;
 use FacebookAds\Object\Campaign;
 use FacebookAds\Object\Fields\AdAccountFields;
+use FacebookAds\Object\Fields\AdPreviewFields;
 use FacebookAds\Object\TargetingSearch;
 use FacebookAds\Object\TargetingSpecs;
 use FacebookAds\Object\Fields\AdCreativeFields;
@@ -276,6 +277,8 @@ class FacebookApi extends Singleton implements MarketingInterface {
                 CampaignFields::ID,
                 CampaignFields::ACCOUNT_ID,
                 CampaignFields::NAME,
+                CampaignFields::OBJECTIVE,
+                CampaignFields::PROMOTED_OBJECT,
                 CampaignFields::EFFECTIVE_STATUS,
                 CampaignFields::CONFIGURED_STATUS
             );
@@ -403,7 +406,35 @@ class FacebookApi extends Singleton implements MarketingInterface {
             Api::init($this->clientId, $this->clientSecret, $this->accessToken);
             $campaign = new Campaign($campaignId);
             $ads = array();
-            $cursor = $campaign->getAds();
+            $cursor = $campaign->getAds(ar);
+
+            // Loop over objects
+            foreach ($cursor as $ad) {
+                $adData = $ad->getData();
+                $ads[] = $this->getAd($adData["id"]);
+            }
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $ads;
+    }
+
+    /**
+     * Service that gets the ads from an existing adset
+     * @param $adsetId
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getAdsetAds($adsetId) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+            $adset = new Adset($adsetId);
+            $ads = array();
+            $cursor = $adset->getAds(array(
+                AdFields::CONFIGURED_STATUS,
+                AdFields::EFFECTIVE_STATUS
+            ));
 
             // Loop over objects
             foreach ($cursor as $ad) {
@@ -507,7 +538,7 @@ class FacebookApi extends Singleton implements MarketingInterface {
      *          "countries":    csv of geocodes of countries what the campaign is aimed to
      *          "regions":      csv of geocodes of regions what the campaign is aimed to
      *          "cities":       csv of geocodes of cities what the campaign is aimed to
-     *          "gender":       1=male, 2=female. Defaults to all.
+     *          "gender":       array -> 1=male, 2=female. Defaults to all.
      *          "age_min":      Minimum age. If used, must be 13 or higher. If omitted, will default to 18
      *          "age_max":      Maximum age. If used, must be 65 or lower.
      *          "page_types":   array of placements where user wants ads to be delivered:
@@ -593,6 +624,25 @@ class FacebookApi extends Singleton implements MarketingInterface {
                 $adset->{AdSetFields::NAME} = $parameters["name"];
             }
 
+            // Promoted object
+            $promoted_object = array();
+
+            if (isset($parameters["page_id"])) {
+                $promoted_object["page_id"] = $parameters["page_id"];
+            }
+
+            if (isset($parameters["application_id"])) {
+                $promoted_object["application_id"] = $parameters["application_id"];
+            }
+
+            if (isset($parameters["object_store_url"])) {
+                $promoted_object["application_id"] = $parameters["application_id"];
+            }
+
+            if (count($promoted_object) > 0) {
+                $adset->{AdSetFields::PROMOTED_OBJECT} = $promoted_object;
+            }
+
             // Basic Targeting
             // Geolocation
             $geo_locations = array();
@@ -605,7 +655,7 @@ class FacebookApi extends Singleton implements MarketingInterface {
                 $geo_locations["regions"] = explode(",", $parameters["regions"]);
             }
 
-            if (isset($parameters["regions"])) {
+            if (isset($parameters["cities"])) {
                 $geo_locations["cities"] = explode(",", $parameters["cities"]);
             }
 
@@ -1005,7 +1055,7 @@ class FacebookApi extends Singleton implements MarketingInterface {
     }
 
     /**
-     * Service that gets an user's adSet information
+     * Service that gets an user's ad information
      * @param $adId
      * @return array
      * @throws ConnectorServiceException
@@ -1017,14 +1067,47 @@ class FacebookApi extends Singleton implements MarketingInterface {
             $ad->read(array(
                 AdFields::ID,
                 AdFields::NAME,
+                AdFields::ACCOUNT_ID,
+                AdFields::CAMPAIGN_ID,
+                AdFields::ADSET_ID,
                 AdFields::CREATED_TIME,
-                AdFields::CREATIVE
+                AdFields::CREATIVE,
+                AdFields::EFFECTIVE_STATUS,
+                AdFields::CONFIGURED_STATUS
             ));
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
         return $ad->getData();
+    }
+
+    /**
+     * Service that gets a specific ad previews
+     * @param $adId
+     * @param $adFormat
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getAdPreviews($adId, $adFormat) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+            $ad = new Ad($adId);
+            $parameters = array("ad_format" => $adFormat);
+            $cursor = $ad->getAdPreviews(array(
+                AdPreviewFields::BODY
+            ), $parameters);
+
+            // Loop over objects
+            $adpreviews = [];
+            foreach ($cursor as $adpreview) {
+                $adpreviews[] = $adpreview->getData();
+            }
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $adpreviews;
     }
 
     /**
@@ -1046,6 +1129,7 @@ class FacebookApi extends Singleton implements MarketingInterface {
                 $text,
                 array(
                     'location_types' => array($type),
+                    'limit' => 500
                 ));
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());

@@ -255,6 +255,18 @@ class Marketing extends Singleton
     }
 
     /**
+     * Service that gets the ads from an existing adset
+     * @param $social
+     * @param $adsetId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getAdsetAds($social, $adsetId) {
+        $api = $this->getSocialApi($social);
+        return $api->getAdsetAds($adsetId);
+    }
+
+    /**
      * Service that get creates a new campaign into an user's ad account
      * @param $social
      * @param $campaignId
@@ -462,6 +474,30 @@ class Marketing extends Singleton
         return $api->createAd($adAccountId, $adSetId, $adCreativeId, $parameters);
     }
 
+    /**
+     * Service that gets an user's ad information
+     * @param $social
+     * @param $adId
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function getAd($social, $adId) {
+        $api = $this->getSocialApi($social);
+        return $api->getAd($adId);
+    }
+
+    /**
+     * Service that gets previews from a specific ad
+     * @param $social
+     * @param $adId
+     * @param $adFormat
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getAdPreviews($social, $adId, $adFormat) {
+        $api = $this->getSocialApi($social);
+        return $api->getAdPreviews($adId, $adFormat);
+    }
     /**
      * Service that search geolocation codes from text parameter
      * @param $type
