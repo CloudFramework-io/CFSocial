@@ -173,6 +173,18 @@ class Marketing extends Singleton
     }
 
     /**
+     * Service that gets user's ad account ad images
+     * @param $social
+     * @param $id - Ad Account Id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserAdAccountAdImages($social, $id) {
+        $api = $this->getSocialApi($social);
+        return $api->exportUserAdAccountAdImages($id);
+    }
+
+    /**
      * Service that get creates a new campaign into an user's ad account
      * @param $social
      * @param $adAccountId
@@ -457,6 +469,19 @@ class Marketing extends Singleton
     public function createExistingPostAdCreative($social, $adAccountId, $parameters) {
         $api = $this->getSocialApi($social);
         return $api->createExistingPostAdCreative($adAccountId, $parameters);
+    }
+
+    /**
+     * Service that creates a new adcreative and a new post within it
+     * @param $social
+     * @param $adAccountId
+     * @param $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function createNewPostAdCreative($social, $adAccountId, $parameters) {
+        $api = $this->getSocialApi($social);
+        return $api->createNewPostAdCreative($adAccountId, $parameters);
     }
 
     /**

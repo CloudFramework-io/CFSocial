@@ -13,10 +13,12 @@ use FacebookAds\Api;
 use FacebookAds\Object\Ad;
 use FacebookAds\Object\AdAccount;
 use FacebookAds\Object\AdCreative;
+use FacebookAds\Object\AdImage;
 use FacebookAds\Object\AdSet;
 use FacebookAds\Object\AdUser;
 use FacebookAds\Object\Campaign;
 use FacebookAds\Object\Fields\AdAccountFields;
+use FacebookAds\Object\Fields\AdImageFields;
 use FacebookAds\Object\Fields\AdPreviewFields;
 use FacebookAds\Object\TargetingSearch;
 use FacebookAds\Object\TargetingSpecs;
@@ -293,6 +295,47 @@ class FacebookApi extends Singleton implements MarketingInterface {
         }
 
         return $campaignsArr;
+    }
+
+    /**
+     * Service that gets user's ad account ad images
+     * @param $id - Ad Account Id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function exportUserAdAccountAdImages($id) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $adAccount = new AdAccount($id);
+            $fields = array(
+                AdImageFields::ID,
+                AdImageFields::CREATED_TIME,
+                AdImageFields::CREATIVES,
+                AdImageFields::FILENAME,
+                AdImageFields::HASH,
+                AdImageFields::HEIGHT,
+                AdImageFields::NAME,
+                AdImageFields::ORIGINAL_HEIGHT,
+                AdImageFields::ORIGINAL_WIDTH,
+                AdImageFields::PERMALINK_URL,
+                AdImageFields::STATUS,
+                AdImageFields::UPDATED_TIME,
+                AdImageFields::URL,
+                AdImageFields::URL_128,
+                AdImageFields::WIDTH
+            );
+            $adImages = $adAccount->getAdImages($fields)->getArrayCopy();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $adImagesArr = [];
+        foreach($adImages as $adImage) {
+            $adImagesArr[] = $adImage->getData();
+        }
+
+        return $adImagesArr;
     }
 
     /**
@@ -718,7 +761,7 @@ class FacebookApi extends Singleton implements MarketingInterface {
             }
 
             if (isset($parameters["optimization_goal"])) {
-                $adset->{AdSetFields::LIFETIME_BUDGET} = $parameters["optimization_goal"];
+                $adset->{AdSetFields::OPTIMIZATION_GOAL} = $parameters["optimization_goal"];
             }
 
             if (isset($parameters["billing_event"])) {
@@ -965,7 +1008,7 @@ class FacebookApi extends Singleton implements MarketingInterface {
             }
 
             if (isset($parameters["optimization_goal"])) {
-                $adset->{AdSetFields::LIFETIME_BUDGET} = $parameters["optimization_goal"];
+                $adset->{AdSetFields::OPTIMIZATION_GOAL} = $parameters["optimization_goal"];
             }
 
             if (isset($parameters["billing_event"])) {
@@ -1022,6 +1065,58 @@ class FacebookApi extends Singleton implements MarketingInterface {
     }
 
     /**
+     * Service that creates a new adcreative and a new post within it
+     * @param $adAccountId
+     * @param $parameters
+     *      "title"             =>  Post title
+     *      "body"              =>  Post body
+     *      "object_url"        =>  Destination URL for a link ad (not connected to a page)
+     *      "image_file"        =>  Post image
+     *      "image_extension"   =>  Post image extension
+     * @return AdCreative
+     * @throws ConnectorServiceException
+     */
+    public function createNewPostAdCreative($adAccountId, $parameters) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            if (isset($parameters["image_file"])) {
+                $image = new AdImage(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
+                rename($parameters["image_file"], $parameters["image_file"] . "." . $parameters["image_extension"]);
+
+                $fields = array(
+                    AdImageFields::FILENAME => $parameters["image_file"] . "." . $parameters["image_extension"]
+                );
+
+                $image->setData($fields);
+
+                $image->create();
+
+                $hash = $image->{AdImageFields::HASH};
+            }
+
+            $adcreative = new AdCreative(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
+
+            $fields = array(AdCreativeFields::TITLE => $parameters["title"],
+                AdCreativeFields::BODY => $parameters["body"],
+                AdCreativeFields::OBJECT_URL => $parameters["object_url"]
+            );
+
+            if (isset($hash)) {
+                $fields[AdCreativeFields::IMAGE_HASH] = $hash;
+            }
+
+            $adcreative->setData($fields);
+
+            $adcreative->create();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $adcreative->getData();
+    }
+
+    /**
      * Service that creates the final ad
      * @param $adAccountId
      * @param $adSetId
@@ -1048,6 +1143,7 @@ class FacebookApi extends Singleton implements MarketingInterface {
                 Ad::STATUS_PARAM_NAME => Ad::STATUS_PAUSED,
             ));
         } catch(\Exception $e) {
+            _printe($e);
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
 
