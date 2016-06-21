@@ -10,6 +10,7 @@ use CloudFramework\Service\SocialNetworks\Interfaces\MarketingInterface;
 
 use Facebook\Facebook;
 use FacebookAds\Api;
+use FacebookAds\Http\Exception\AuthorizationException;
 use FacebookAds\Object\Ad;
 use FacebookAds\Object\AdAccount;
 use FacebookAds\Object\AdCreative;
@@ -20,6 +21,10 @@ use FacebookAds\Object\Campaign;
 use FacebookAds\Object\Fields\AdAccountFields;
 use FacebookAds\Object\Fields\AdImageFields;
 use FacebookAds\Object\Fields\AdPreviewFields;
+use FacebookAds\Object\Fields\ObjectStorySpecFields;
+use FacebookAds\Object\ObjectStory\LinkData;
+use FacebookAds\Object\Fields\ObjectStory\LinkDataFields;
+use FacebookAds\Object\ObjectStorySpec;
 use FacebookAds\Object\TargetingSearch;
 use FacebookAds\Object\TargetingSpecs;
 use FacebookAds\Object\Fields\AdCreativeFields;
@@ -807,11 +812,13 @@ class FacebookApi extends Singleton implements MarketingInterface {
                 AdSetFields::ID,
                 AdSetFields::NAME,
                 AdSetFields::CREATED_TIME,
+                AdSetFields::CAMPAIGN_ID,
                 AdSetFields::TARGETING,
                 AdSetFields::START_TIME,
                 AdSetFields::END_TIME,
                 AdSetFields::PROMOTED_OBJECT,
                 AdSetFields::BILLING_EVENT,
+                AdSetFields::OPTIMIZATION_GOAL,
                 AdSetFields::LIFETIME_BUDGET,
                 AdSetFields::DAILY_BUDGET,
                 AdSetFields::BUDGET_REMAINING,
@@ -1080,35 +1087,54 @@ class FacebookApi extends Singleton implements MarketingInterface {
         try {
             Api::init($this->clientId, $this->clientSecret, $this->accessToken);
 
-            if (isset($parameters["image_file"])) {
-                $image = new AdImage(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
-                rename($parameters["image_file"], $parameters["image_file"] . "." . $parameters["image_extension"]);
+            // Link Ad
+            switch($parameters["type"]) {
+                case 1:
+                    if (isset($parameters["image_file"])) {
+                        $image = new AdImage(null, (false === strpos($adAccountId, 'act_')) ? 'act_' . $adAccountId : $adAccountId);
+                        rename($parameters["image_file"], $parameters["image_file"] . "." . $parameters["image_extension"]);
 
-                $fields = array(
-                    AdImageFields::FILENAME => $parameters["image_file"] . "." . $parameters["image_extension"]
-                );
+                        $fields = array(
+                            AdImageFields::FILENAME => $parameters["image_file"] . "." . $parameters["image_extension"]
+                        );
 
-                $image->setData($fields);
+                        $image->setData($fields);
 
-                $image->create();
+                        $image->create();
 
-                $hash = $image->{AdImageFields::HASH};
+                        $hash = $image->{AdImageFields::HASH};
+                    }
+
+                    $link_data = new LinkData();
+                    $link_data->setData(array(
+                        LinkDataFields::MESSAGE => $parameters["message"],
+                        LinkDataFields::LINK => $parameters["link"],
+                        LinkDataFields::CAPTION => $parameters["caption"]
+                    ));
+
+                    if (isset($hash)) {
+                        $fields[LinkDataFields::IMAGE_HASH] = $hash;
+                    }
+
+                    $object_story_spec = new ObjectStorySpec();
+                    $object_story_spec->setData(array(
+                        ObjectStorySpecFields::PAGE_ID => $parameters["page_id"],
+                        ObjectStorySpecFields::LINK_DATA => $link_data,
+                    ));
+
+                    $adcreative = new AdCreative(null, (false === strpos($adAccountId, 'act_')) ? 'act_' . $adAccountId : $adAccountId);
+
+                    $adcreative->setData(array(
+                        AdCreativeFields::NAME => $parameters["message"],
+                        AdCreativeFields::OBJECT_STORY_SPEC => $object_story_spec,
+                    ));
+
+                    break;
             }
-
-            $adcreative = new AdCreative(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
-
-            $fields = array(AdCreativeFields::TITLE => $parameters["title"],
-                AdCreativeFields::BODY => $parameters["body"],
-                AdCreativeFields::OBJECT_URL => $parameters["object_url"]
-            );
-
-            if (isset($hash)) {
-                $fields[AdCreativeFields::IMAGE_HASH] = $hash;
-            }
-
-            $adcreative->setData($fields);
 
             $adcreative->create();
+        } catch(AuthorizationException $ae) {
+            throw new ConnectorServiceException($ae->getErrorUserMessage(), $ae->getCode());
         } catch(\Exception $e) {
             throw new ConnectorServiceException($e->getMessage(), $e->getCode());
         }
