@@ -185,6 +185,18 @@ class Marketing extends Singleton
     }
 
     /**
+     * Service that gets user's ad account ad videos
+     * @param $social
+     * @param $id - Ad Account Id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function exportUserAdAccountAdVideos($social, $id) {
+        $api = $this->getSocialApi($social);
+        return $api->exportUserAdAccountAdVideos($id);
+    }
+
+    /**
      * Service that get creates a new campaign into an user's ad account
      * @param $social
      * @param $adAccountId

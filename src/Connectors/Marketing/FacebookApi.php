@@ -17,13 +17,17 @@ use FacebookAds\Object\AdCreative;
 use FacebookAds\Object\AdImage;
 use FacebookAds\Object\AdSet;
 use FacebookAds\Object\AdUser;
+use FacebookAds\Object\AdVideo;
 use FacebookAds\Object\Campaign;
 use FacebookAds\Object\Fields\AdAccountFields;
 use FacebookAds\Object\Fields\AdImageFields;
 use FacebookAds\Object\Fields\AdPreviewFields;
+use FacebookAds\Object\Fields\AdVideoFields;
+use FacebookAds\Object\Fields\ObjectStory\VideoDataFields;
 use FacebookAds\Object\Fields\ObjectStorySpecFields;
 use FacebookAds\Object\ObjectStory\LinkData;
 use FacebookAds\Object\Fields\ObjectStory\LinkDataFields;
+use FacebookAds\Object\ObjectStory\VideoData;
 use FacebookAds\Object\ObjectStorySpec;
 use FacebookAds\Object\TargetingSearch;
 use FacebookAds\Object\TargetingSpecs;
@@ -341,6 +345,39 @@ class FacebookApi extends Singleton implements MarketingInterface {
         }
 
         return $adImagesArr;
+    }
+
+    /**
+     * Service that gets user's ad account ad videos
+     * @param $id - Ad Account Id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function exportUserAdAccountAdVideos($id) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $adAccount = new AdAccount($id);
+            $fields = array(
+                AdVideoFields::ID,
+                AdVideoFields::CREATED_TIME,
+                AdVideoFields::DESCRIPTION,
+                AdVideoFields::EMBED_HTML,
+                AdVideoFields::FORMAT,
+                AdVideoFields::PICTURE,
+                AdVideoFields::SOURCE
+            );
+            $adVideos = $adAccount->getAdVideos($fields)->getArrayCopy();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $adVideosArr = [];
+        foreach($adVideos as $adVideo) {
+            $adVideosArr[] = $adVideo->getData();
+        }
+
+        return $adVideosArr;
     }
 
     /**
@@ -1087,8 +1124,8 @@ class FacebookApi extends Singleton implements MarketingInterface {
         try {
             Api::init($this->clientId, $this->clientSecret, $this->accessToken);
 
-            // Link Ad
             switch($parameters["type"]) {
+                // Link Ad
                 case 1:
                     if (isset($parameters["image_file"])) {
                         $image = new AdImage(null, (false === strpos($adAccountId, 'act_')) ? 'act_' . $adAccountId : $adAccountId);
@@ -1126,6 +1163,35 @@ class FacebookApi extends Singleton implements MarketingInterface {
 
                     $adcreative->setData(array(
                         AdCreativeFields::NAME => $parameters["message"],
+                        AdCreativeFields::OBJECT_STORY_SPEC => $object_story_spec,
+                    ));
+
+                    break;
+                // Video ad
+                case 2:
+                    $video = new AdVideo(null, (false === strpos($adAccountId, 'act_')) ? 'act_' . $adAccountId : $adAccountId);
+                    rename($parameters["video_file"], $parameters["video_file"] . "." . $parameters["video_file_extension"]);
+
+                    $video->{AdVideoFields::SOURCE} = $parameters["video_file"] . "." . $parameters["video_file_extension"];
+                    $video->create();
+
+                    $video_data = new VideoData();
+                    $video_data->setData(array(
+                            VideoDataFields::DESCRIPTION => $parameters["description"],
+                            VideoDataFields::IMAGE_URL => $parameters["image_url"],
+                            VideoDataFields::VIDEO_ID => $video->{AdVideoFields::ID}
+                    ));
+
+                    $object_story_spec = new ObjectStorySpec();
+                    $object_story_spec->setData(array(
+                            ObjectStorySpecFields::PAGE_ID => $parameters["page_id"],
+                            ObjectStorySpecFields::VIDEO_DATA => $video_data,
+                    ));
+
+                    $adcreative = new AdCreative(null, (false === strpos($adAccountId, 'act_')) ? 'act_' . $adAccountId : $adAccountId);
+
+                    $adcreative->setData(array(
+                        AdCreativeFields::NAME => $parameters["description"],
                         AdCreativeFields::OBJECT_STORY_SPEC => $object_story_spec,
                     ));
 
