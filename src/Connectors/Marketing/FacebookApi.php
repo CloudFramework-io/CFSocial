@@ -16,12 +16,14 @@ use FacebookAds\Object\AdAccount;
 use FacebookAds\Object\AdCreative;
 use FacebookAds\Object\AdImage;
 use FacebookAds\Object\AdSet;
+use FacebookAds\Object\AdsPixel;
 use FacebookAds\Object\AdUser;
 use FacebookAds\Object\AdVideo;
 use FacebookAds\Object\Campaign;
 use FacebookAds\Object\Fields\AdAccountFields;
 use FacebookAds\Object\Fields\AdImageFields;
 use FacebookAds\Object\Fields\AdPreviewFields;
+use FacebookAds\Object\Fields\AdsPixelsFields;
 use FacebookAds\Object\Fields\AdVideoFields;
 use FacebookAds\Object\Fields\ObjectStory\VideoDataFields;
 use FacebookAds\Object\Fields\ObjectStorySpecFields;
@@ -378,6 +380,58 @@ class FacebookApi extends Singleton implements MarketingInterface {
         }
 
         return $adVideosArr;
+    }
+
+    /**
+     * Service that gets user's ad account pixels (conversions)
+     * @param $id - Ad Account Id
+     * @return array
+     * @throws ConnectorServiceException
+     */
+    public function exportUserAdAccountPixels($id) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $adAccount = new AdAccount($id);
+            $fields = array(
+                AdsPixelsFields::ID,
+                AdsPixelsFields::NAME,
+                AdsPixelsFields::CODE,
+                AdsPixelsFields::LAST_FIRED_TIME
+            );
+            $adsPixels = $adAccount->getAdsPixels($fields)->getArrayCopy();
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        $adsPixelsArr = [];
+        foreach($adsPixels as $adPixel) {
+            $adsPixelsArr[] = $adPixel->getData();
+        }
+
+        return $adsPixelsArr;
+    }
+
+    /**
+     * Service that creates a pixel
+     * @param $adAccountId
+     * @param $parameters
+     * @return array
+     * @throws \Exception
+     */
+    public function createPixel($adAccountId, $parameters) {
+        try {
+            Api::init($this->clientId, $this->clientSecret, $this->accessToken);
+
+            $pixel = new AdsPixel(null, (false === strpos($adAccountId,'act_'))?'act_'.$adAccountId:$adAccountId);
+            $pixel->{AdsPixelsFields::NAME} = $parameters["name"];
+            $pixel->create();
+        } catch(\Exception $e) {
+            _printe($e);
+            throw new ConnectorServiceException($e->getMessage(), $e->getCode());
+        }
+
+        return $pixel->getData();
     }
 
     /**
