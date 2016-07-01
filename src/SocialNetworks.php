@@ -346,6 +346,12 @@ class SocialNetworks extends Singleton
      *      "content"                   =>  Text of the tweet (required)
      *      "attachment"                =>  String of media ids separated by comma
      *      "in_reply_to_status_id"     =>  Id of tweet this new tweet is answering
+     * YOUTUBE
+     *      "title"                     =>  Title of the video (required)
+     *      "description"               =>  Description of the video (required)
+     *      "status"                    =>  Status of the video (required)
+     *      "category_id"               =>  Category of the video (optional)
+     *      "tags"                      =>  Comma separated list of tags (optional)
      * @return mixed
      * @throws \Exception
      */
@@ -1099,7 +1105,7 @@ class SocialNetworks extends Singleton
     }
 
     /******************************************************************************************************
-     **                                         FLICKR END POINTS                                      **
+     **                                         FLICKR END POINTS                                        **
      ******************************************************************************************************/
 
     /**
@@ -1114,6 +1120,112 @@ class SocialNetworks extends Singleton
     {
         $connector = $this->getSocialApi($social);
         return $connector->addUserPhotoToAlbum($albumId, $photoId);
+    }
+
+    /******************************************************************************************************
+     **                                         YOUTUBE END POINTS                                       **
+     ******************************************************************************************************/
+
+    /**
+     * Service that queries to a social network for video categories
+     * @param $social
+     * @return array
+     * @throws \Exception
+     */
+    public function exportVideoCategories($social)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportVideoCategories();
+    }
+
+    /**
+     * Service that queries to a social network for playlists
+     * @param $social
+     * @return array
+     * @throws \Exception
+     */
+    public function exportPlaylists($social, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportPlaylists($maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that creates a new playlist in the social network
+     * @param $social
+     * @param array $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function createPlaylist($social, array $parameters) {
+        $connector = $this->getSocialApi($social);
+        return $connector->createPlaylist($parameters);
+    }
+
+    /**
+     * Service that queries to a social network for videos
+     * @param $social
+     * @param integer $maxResultsPerPage maximum elements per page
+     * @param integer $numberOfPages number of pages
+     * @param string $pageToken Indicates a specific page for pagination
+     * @return array
+     * @throws \Exception
+     */
+    public function exportVideos($social, $maxResultsPerPage, $numberOfPages, $pageToken)
+    {
+        $connector = $this->getSocialApi($social);
+        return $connector->exportVideos($maxResultsPerPage, $numberOfPages, $pageToken);
+    }
+
+    /**
+     * Service that gets a video by its id
+     * @param $social
+     * @param $videoId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getVideo($social, $videoId) {
+        $connector = $this->getSocialApi($social);
+        return $connector->getVideo($videoId);
+    }
+
+    /**
+     * Service that adds a video to a playlist
+     * @param $social
+     * @param $playlistId
+     * @param $videoId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function addVideoToPlaylist($social, $playlistId, $videoId) {
+        $connector = $this->getSocialApi($social);
+        return $connector->addVideoToPlaylist($playlistId, $videoId);
+    }
+
+    /**
+     * Service that removes a video from a playlist
+     * @param $social
+     * @param $playlistId
+     * @param $videoId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function removeVideoFromPlaylist($social, $playlistId, $videoId) {
+        $connector = $this->getSocialApi($social);
+        return $connector->removeVideoFromPlaylist($playlistId, $videoId);
+    }
+
+    /**
+     * Service that sets the video thumbnail
+     * @param $social
+     * @param $videoId
+     * @param array $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function setVideoThumbnail($social, $videoId, array $parameters) {
+        $connector = $this->getSocialApi($social);
+        return $connector->setVideoThumbnail($videoId, $parameters);
     }
 
     /******************************************************************************************************
