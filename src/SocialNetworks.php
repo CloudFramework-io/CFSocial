@@ -681,7 +681,6 @@ class SocialNetworks extends Singleton
     /**
      * Service that query to a social network api to get page setting
      * @param string $social
-     * @param string $entity    "page"
      * @param string $id        page id
      * @return mixed
      * @throws \Exception
@@ -690,6 +689,29 @@ class SocialNetworks extends Singleton
         $connector = $this->getSocialApi($social);
         return $connector->getPage($id);
     }
+
+    /**
+     * Service that creates a tab in a page
+     * @param $social
+     * @param $id
+     * @param $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function createPageTab($social, $id, $parameters) {
+        $connector = $this->getSocialApi($social);
+        return $connector->createPageTab($id, $parameters);
+    }
+
+    /** It tends to be eliminated */
+    /**
+     * Temporal Service to simulate a page tab
+     */
+    public function simulatePageTab($social, $signedRequest, $appSecret) {
+        $connector = $this->getSocialApi($social);
+        return $connector->simulatePageTab($signedRequest, $appSecret);
+    }
+    /** It tends to be eliminated */
 
     /**
      * Service that connect to social network api and publish a post in an authenticated user's page

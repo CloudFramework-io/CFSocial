@@ -852,6 +852,13 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
         try {
             $response = $this->client->get("/".$id."?fields=access_token,category,name,id", $this->accessToken);
             $node = $response->getGraphNode();
+
+            $response = $this->client->get("/".$id."/tabs", $node["access_token"]);
+            $tabsEdge = $response->getGraphEdge();
+            $tabs = array();
+            foreach ($tabsEdge as $tab) {
+                $tabs[] = $tab->asArray();
+            }
         } catch(\Exception $e) {
             throw new ConnectorServiceException('Error getting page settings: ' . $e->getMessage(), $e->getCode());
         }
@@ -860,7 +867,62 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
             "access_token" => $node["access_token"],
             "category" => $node["category"],
             "name" => $node["name"],
-            "id" => $node["id"]
+            "id" => $node["id"],
+            "tabs" => $tabs
+        );
+
+        return $page;
+    }
+
+    /**
+     * Service that creates a tab in a page
+     * @param $id       page id
+     * @param $parameters
+     *      "app_id"               =>      ID of the app that contains a Page Tab platform (required)
+     *      "custom_name"          =>      Custom name for the tab (required)
+     *      "custom_image_url"     =>      url of the image file (optional). You can upload a JPG, GIF or PNG file.
+     *                                     The size of the image must be 111 x 74 pixels. File size limit 1 MB.
+     *      "position"             =>      position among the other tabs (optional)
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function createPageTab($id, $parameters) {
+        $this->checkPage($id);
+
+        if ((null === $parameters["app_id"]) || ("" === $parameters["app_id"])) {
+            throw new ConnectorConfigException("'app_id' parameter is required");
+        }
+
+        if ((null === $parameters["custom_name"]) || ("" === $parameters["custom_name"])) {
+            throw new ConnectorConfigException("'custom_name' parameter is required");
+        }
+
+        try {
+            // Get page information
+            $response = $this->client->get("/".$id."?fields=access_token,category,name,id", $this->accessToken);
+            $node = $response->getGraphNode();
+
+            // Create tab
+            $this->client->post("/".$id."/tabs", $parameters, $node["access_token"]);
+
+            // Get tabs
+            $response = $this->client->get("/".$id."/tabs", $node["access_token"]);
+            $tabsEdge = $response->getGraphEdge();
+            $tabs = array();
+            foreach ($tabsEdge as $tab) {
+                $tabs[] = $tab->asArray();
+            }
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException('Error creating page tab: ' . $e->getMessage(), $e->getCode());
+        }
+
+        $page = array(
+            "access_token" => $node["access_token"],
+            "category" => $node["category"],
+            "name" => $node["name"],
+            "id" => $node["id"],
+            "tabs" => $tabs
         );
 
         return $page;
