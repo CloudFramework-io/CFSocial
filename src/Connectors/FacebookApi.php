@@ -929,6 +929,77 @@ class FacebookApi extends Singleton implements SocialNetworkInterface
     }
 
     /**
+     * Service that removes a tab in a page
+     * @param $id       page id
+     * @param $tabId    tab id this is app_{app_id} where {app_id} is the id of the custom app.
+     * @return array
+     * @throws ConnectorConfigException
+     * @throws ConnectorServiceException
+     */
+    public function removePageTab($id, $tabId) {
+        $this->checkPage($id);
+
+        try {
+            // Get page information
+            $response = $this->client->get("/".$id."?fields=access_token,category,name,id", $this->accessToken);
+            $node = $response->getGraphNode();
+
+            // Remove tab
+            $this->client->delete("/".$id."/tabs", array("tab" => $tabId), $node["access_token"]);
+
+            // Get tabs
+            $response = $this->client->get("/".$id."/tabs", $node["access_token"]);
+            $tabsEdge = $response->getGraphEdge();
+            $tabs = array();
+            foreach ($tabsEdge as $tab) {
+                $tabs[] = $tab->asArray();
+            }
+        } catch(\Exception $e) {
+            throw new ConnectorServiceException('Error creating page tab: ' . $e->getMessage(), $e->getCode());
+        }
+
+        $page = array(
+            "access_token" => $node["access_token"],
+            "category" => $node["category"],
+            "name" => $node["name"],
+            "id" => $node["id"],
+            "tabs" => $tabs
+        );
+
+        return $page;
+    }
+
+
+    /** It tends to be eliminated */
+    /**
+     * Temporal Service to simulate a page tab
+     */
+    public function simulatePageTab($signedRequest, $appSecret) {
+        return $this->parseSignedRequest($signedRequest, $appSecret);
+    }
+
+    private function parseSignedRequest($signedRequest, $appSecret) {
+        list($encoded_sig, $payload) = explode('.', $signedRequest, 2);
+
+        // decode the data
+        $sig = $this->base64UrlDecode($encoded_sig);
+        $data = json_decode($this->base64UrlDecode($payload), true);
+
+        // confirm the signature
+        $expected_sig = hash_hmac('sha256', $payload, $appSecret, $raw = true);
+        if ($sig !== $expected_sig) {
+            _printe('Bad Signed JSON signature!');
+            return null;
+        }
+        return $data;
+    }
+
+    private function base64UrlDecode($input) {
+        return base64_decode(strtr($input, '-_', '+/'));
+    }
+    /** It tends to be eliminated */
+
+    /**
      * Method that check credentials are present and valid
      * @param array $credentials
      * @throws ConnectorConfigException

@@ -703,6 +703,20 @@ class SocialNetworks extends Singleton
         return $connector->createPageTab($id, $parameters);
     }
 
+    /**
+     * Service that creates a tab in a page
+     * @param $social
+     * @param $id
+     * @param $tabId
+     * @param $parameters
+     * @return mixed
+     * @throws \Exception
+     */
+    public function removePageTab($social, $id, $tabId) {
+        $connector = $this->getSocialApi($social);
+        return $connector->removePageTab($id, $tabId);
+    }
+
     /** It tends to be eliminated */
     /**
      * Temporal Service to simulate a page tab
