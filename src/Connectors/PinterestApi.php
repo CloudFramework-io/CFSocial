@@ -887,7 +887,7 @@ class PinterestApi extends Singleton implements SocialNetworkInterface {
         $this->client->auth->setOAuthToken($this->accessToken);
 
         try {
-            $boardname = strtolower(str_replace(" ", "-", preg_replace('/[^a-zA-Z0-9\ ]/i', '', urldecode($boardname))));
+            $boardname = SocialNetworks::slugify($boardname);
             $parameters = array(
                 "note" => $content,
                 "board" => $username."/".$boardname

@@ -1869,4 +1869,29 @@ class SocialNetworks extends Singleton
         $connector = $this->getSocialApi($social);
         return $connector->deleteTweet($entity, $id);
     }
+
+    public static function slugify($text) {
+        // replace non letter or digits by -
+        $slug = preg_replace('~[^\pL\d]+~u', '-', $text);
+
+        // transliterate
+        $slug = iconv('utf-8', 'us-ascii//TRANSLIT', $slug);
+
+        // remove unwanted characters
+        $slug = preg_replace('~[^-\w]+~', '', $slug);
+
+        // trim
+        $slug = trim($slug, '-');
+
+        // remove duplicate -
+        $slug = preg_replace('~-+~', '-', $slug);
+
+        // lowercase
+        $slug = strtolower($slug);
+
+        if (empty($text)) {
+            $slug = 'n-a';
+        }
+        return $slug;
+    }
 }
